@@ -1,0 +1,263 @@
+[
+{
+"id": "anubis-statuette",
+"name": "Anubis Statuette",
+"description": "After resolving this Zone, visit a real or unreal Zone you have not visited yet this turn. Move to the real Zone for that Time afterwards.",
+"coin": "2",
+"type": "M",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "artist",
+"name": "Artist",
+"description": "Draw a card.",
+"coin": "8",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "bag-of-loot",
+"name": "Bag of Loot",
+"description": "Return this to your hand.",
+"coin": "7",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "barbarian-horde",
+"name": "Barbarian Horde",
+"description": "Discard any number of cards. Advance one of your ♛ per card you discarded.",
+"coin": "9",
+"type": "M",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "black-market",
+"name": "Black Market",
+"description": "When you play another card, gain an extra $2.",
+"coin": "7",
+"type": "P",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "conspiracy",
+"name": "Conspiracy",
+"description": "Your scored cards advance an extra ♛.",
+"coin": "0",
+"type": "P",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "crown-jewels",
+"name": "Crown Jewels",
+"description": "Discards any number of cards. Gain $4 per card you discarded.",
+"coin": "11",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "engineer",
+"name": "Engineer",
+"description": "Draw 2 cards. Discard 2 cards.",
+"coin": "12",
+"type": "M",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "explorer",
+"name": "Explorer",
+"description": "When you draw a card, gain $1 (per card).",
+"coin": "6",
+"type": "P",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "friends-in-old-places",
+"name": "Friends in Old Places",
+"description": "Cards cost you $2 less to score.",
+"coin": "6",
+"type": "P",
+"score": "6",
+"cost": "12"
+},
+{
+"id": "gang-of-pickpockets",
+"name": "Gang of Pickpockets",
+"description": "When you play another card, draw a card (after resolving the played card).",
+"coin": "0",
+"type": "P",
+"score": "6",
+"cost": "12"
+},
+{
+"id": "gladiators-gladius",
+"name": "Gladiator's Gladius",
+"description": "Draw a card per Time you rule.",
+"coin": "8",
+"type": "M",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "golden-goose",
+"name": "Golden Goose",
+"description": "Each other player gains $5.",
+"coin": "16",
+"type": "M",
+"score": "8",
+"cost": "20"
+},
+{
+"id": "infected-rat",
+"name": "Infected Rat",
+"description": "Each player with more cards in hand than you discards a card.",
+"coin": "8",
+"type": "M",
+"score": "6",
+"cost": "12"
+},
+{
+"id": "inventor",
+"name": "Inventor",
+"description": "Choose one: Draw 2 cards; or gain $8; or advance two of your ♛.",
+"coin": "4",
+"type": "M",
+"score": "8",
+"cost": "20"
+},
+{
+"id": "investments",
+"name": "Investments",
+"description": "You may discard this from play at the end of a turn, to gain half as many $ as you gained that turn, rounded down.",
+"coin": "8",
+"type": "P",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "kill-your-grandfather",
+"name": "Kill Your Grandfather",
+"description": "Discard your hand. Draw 2 cards.",
+"coin": "5",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "kings-sword",
+"name": "King's Sword",
+"description": "Advance one of your ♛ per time you rule.",
+"coin": "8",
+"type": "M",
+"score": "8",
+"cost": "20"
+},
+{
+"id": "mayan-ritual-knife",
+"name": "Mayan Ritual Knife",
+"description": "Each other player loses $2 per Time you rule.",
+"coin": "10",
+"type": "M",
+"score": "6",
+"cost": "12"
+},
+{
+"id": "papal-tiara",
+"name": "Papal Tiara",
+"description": "Score a card (paying).",
+"coin": "4",
+"type": "M",
+"score": "8",
+"cost": "20"
+},
+{
+"id": "predict-the-future",
+"name": "Predict the Future",
+"description": "At the end of this turn, you may change history in this Zone.",
+"coin": "12",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "prime-real-estate",
+"name": "Prime Real Estate",
+"description": "When you advance a ♛ to Time IV, gain $1.",
+"coin": "7",
+"type": "P",
+"score": "8",
+"cost": "20"
+},
+{
+"id": "secret-society",
+"name": "Secret Society",
+"description": "When you score a card, draw a card.",
+"coin": "0",
+"type": "P",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "settlers",
+"name": "Settlers",
+"description": "Advance one of your ♛.",
+"coin": "8",
+"type": "M",
+"score": "7",
+"cost": "16"
+},
+{
+"id": "shoguns-katana",
+"name": "Shogun's Katana",
+"description": "Gain $2 per Time you rule.",
+"coin": "10",
+"type": "M",
+"score": "6",
+"cost": "12"
+},
+{
+"id": "step-on-a-butterfly",
+"name": "Step on a Butterfly",
+"description": "At the end of this turn, change history in each real Zone, going from past to present.",
+"coin": "12",
+"type": "M",
+"score": "4",
+"cost": "4"
+},
+{
+"id": "think-tank",
+"name": "Think Tank",
+"description": "When you discard a card, gain $1 (per card).",
+"coin": "11",
+"type": "P",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "trinket",
+"name": "Trinket",
+"description": "Play another card.",
+"coin": "4",
+"type": "M",
+"score": "5",
+"cost": "8"
+},
+{
+"id": "tulip-stocks",
+"name": "Tulip Stocks",
+"description": "Each other player loses $5.",
+"coin": "9",
+"type": "M",
+"score": "8",
+"cost": "20"
+}
+]

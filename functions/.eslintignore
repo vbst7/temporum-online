@@ -1,0 +1,7 @@
+# This file tells ESLint to ignore files that are only used for local testing.
+# This allows the `predeploy` lint check to pass without having to fix
+# lint errors in development-only code.
+actions/evaluateTest.js
+actions/runAITest.js
+utils/aiTestHelper.js
+utils/testResultHelpers.js

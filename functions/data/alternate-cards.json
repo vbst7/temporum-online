@@ -1,0 +1,49 @@
+[
+  {
+    "id": "panacea",
+    "name": "Panacea",
+    "description": "If you rule Time III, gain $4. If you rule Time II, draw a card. If you rule Time I, advance one of your ♛.",
+    "coin": "8",
+    "type": "M",
+    "score": "4",
+    "cost": "4"
+  },
+  {
+    "id": "golden-apple",
+    "name": "Golden Apple",
+    "description": "Each other player moves here (they don't visit this Zone, they just move).",
+    "coin": "12",
+    "type": "M",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "pilgrims",
+    "name": "Pilgrims",
+    "description": "Score a card paying $12 less, advancing 2 ♛ less.",
+    "coin": "0",
+    "type": "M",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "visionary",
+    "name": "Visionary",
+    "description": "Advance one of your ♛. Play another card.",
+    "score-instruction": "When you score this, you may score another card.",
+    "coin": "0",
+    "type": "M",
+    "cost": "28",
+    "score": "8"
+  },
+  {
+    "id": "meet-younger-self",
+    "name": "Meet Younger Self",
+    "description": "Draw 3 cards.",
+    "score-instruction": "When you score this, draw a card.",
+    "coin": "0",
+    "type": "M",
+    "cost": "12",
+    "score": "5"
+  }
+]

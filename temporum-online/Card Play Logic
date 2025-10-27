@@ -1,0 +1,80 @@
+Playing a card
+
+Player is prompted with visit zone
+Player clicks zone, visitZone(index)
+visitSpecificZone(player,index)
+resolutionStack.push(zone)
+
+visitChoiceZone
+Player prompted with choice, clicks play
+executeChoice("play")
+promptPlay(player)
+
+or
+
+promptPlay(player)
+
+Player is prompted to play a card if they have one
+Else, execute stack's followup
+
+playCard(player,cardIndex)
+playSpecificCard(player,cardToPlay)
+    card is pushed to cardsInPlay, resolution stack
+
+playMomentary (card with no prompt, return)
+
+or
+
+playPerpetual (no immediate prompt, return)
+
+continue with playSpecificCard
+executeCardFollowUp(card id)
+    if card set a prompt, return to playSpecificCard
+    turnEnded is empty, so updateLobbyState
+
+    pop card from resolution stack
+    Then pop card again? Only if underlying action is the same card. Seemingly for engineer
+    Special logic for engineer
+
+executeZoneFollowUp()
+    followup bonus for zone (no prompt)
+    pop zone from resolution stack
+    in normal case (no Info/Nuclear)
+checkAnubisAndEndTurn() (no anubis or investments)
+endTurn()
+startTurn()
+
+updateLobbyState() just updates the lobby's data
+
+
+playMomentary (barbarian)
+Player prompted discard-many (executeCardFollowUp is called, but returns immediately as b-horde has a prompt)
+discardMany()
+    clear prompt
+
+Player prompt = advance
+advanceCrown
+executeCardFollowUp(barbarian)
+
+or
+
+no cards discarded, so continue
+    executeCardFollowUp (was just popping before, so wasn't being discarded)
+    execute card/zone followup for next
+
+
+playMomentary() Engineer
+push engineer discard to the stack
+Player prompt "discard" 
+discardAndContinue(cardIndex)
+executeCardFollowUp(engineer,discard)
+    pop engineer,discard. underlyignAction is just engineer
+Player prompt discard
+discardAndContinue(cardIndex)
+executeCardFollowUp(engineer)
+
+
+Finished playing barbarian horde, discarding none. "Executing follow-up for PLutocracy" appears twice in a row in the log, advancing happende twice.
+Issue not present for Prohibition or Industrial Revolution
+Issue not present if cards are discarded for Barbarian
+Issue found: executeCardFollowUp was being called if no prompt was set, but executeCardFollowUp was also being called again regardless, so zone followed up twice.

@@ -1,0 +1,203 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /lobbies/{lobbyId} {
+      allow read: if true;
+
+      // Any authenticated user can create a lobby, as long as they set themselves as the owner.
+      allow create: if request.auth != null
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.status == 'waiting'
+                    // Ensure spectators is a list, even if empty
+                    && request.resource.data.spectators is list
+                    // Either the creator is a player or a spectator, but not both.
+                    && ((request.resource.data.players.size() == 1 && request.resource.data.players[0].id == request.auth.uid && request.resource.data.spectators.size() == 0) ||
+                        (request.resource.data.spectators.size() == 1 && request.resource.data.spectators[0].id == request.auth.uid && request.resource.data.players.size() >= 0));
+
+      // Updates are restricted based on the lobby's status.
+      allow update: if request.auth != null && (
+        // The host can always flag a lobby for deletion, regardless of game state.
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleteMe']) && request.resource.data.deleteMe == true && resource.data.ownerId == request.auth.uid) ||
+        // A client can't update the deck or other players' hands.
+        !('deck' in request.resource.data.diff(resource.data).affectedKeys()) &&
+        !('hand' in request.resource.data.diff(resource.data).affectedKeys()) &&
+        // All other actions must go through the pendingAction validation flow.
+        hasValidAction(request, resource.data));
+
+      // Players cannot delete lobbies; this is handled by Cloud Functions.
+      allow delete: if false;
+
+      // Rules for the private player data subcollection
+      match /private/{playerId} {
+        // A player can read their own private hand data.
+        // The lobby owner can read the private data of AI players in their lobby.
+        // Writes are denied from the client to ensure hand state is only managed by the server.
+        allow read: if request.auth != null && (
+          request.auth.uid == playerId ||
+          (
+            isHost(get(/databases/$(database)/documents/lobbies/$(lobbyId)).data, request.auth.uid) &&
+            isAIPlayer(playerId)
+          )
+        );
+        allow write: if false;
+      }
+
+      // Rules for the presence system subcollection
+      match /sessions/{sessionId} {
+        // Any authenticated user can see who is online. The session documents contain no sensitive data.
+        // This prevents a permission loop when a user first joins a lobby.
+        allow list, read: if request.auth != null;
+        // A user can only create, update, or delete their own session document.
+        allow create, update, delete: if request.auth != null && request.auth.uid == sessionId;
+      }
+    }
+
+    // --- Helper Functions ---
+    function hasValidAction(req, data) {
+      // A client can write a `pendingAction`.
+      let isClientRequestingAction = req.resource.data.diff(data).affectedKeys().hasOnly(['pendingAction'])
+                                     && isValidAction(req.resource.data.pendingAction, data, req.auth.uid);
+      // The server function clears `pendingAction` and updates other fields. The client listener needs to allow this.
+      let isServerCompletingAction = !('pendingAction' in req.resource.data) && ('pendingAction' in data);
+
+      return isClientRequestingAction || isServerCompletingAction;
+    }
+
+    function isValidAction(action, data, uid) {
+      // The action must be a map with a type and the user's UID.
+      return action != null
+          && action is map
+          && action.keys().hasAll(['type', 'uid', 'timestamp', 'actionId'])
+          // The UID in the action must be the authenticated user, OR the authenticated user must be the host.
+          // This allows the host to submit actions on behalf of AI players.
+          // The isAllowedAction function will then verify if the action is valid for the action.uid.
+          && (action.uid == uid || isHost(data, uid)) // uid here is request.auth.uid
+          && isAllowedAction(action.type, action.get('payload', null), data, action.uid, uid);
+    }
+
+    function isAllowedAction(type, payload, data, actionUid, authUid) {
+      return (
+        // --- Waiting room actions
+        (type == 'JOIN_LOBBY' && isNotPlayerInLobby(data.players, authUid) && isNotSpectator(data.spectators, authUid)) ||
+        (type == 'LEAVE_LOBBY' && (isPlayerInLobby(data.players, authUid) || isSpectator(data.spectators, authUid))) || // Anyone in the lobby can leave
+        (type == 'BECOME_SPECTATOR' && isPlayerInLobby(data.players, authUid)) || // A player can become a spectator
+        (type == 'CHANGE_COLOR' && data.status == 'waiting' && isPlayerInLobby(data.players, authUid)) || // Anyone can change their own color
+        // Host-only waiting room actions
+        (isHost(data, authUid) && data.status == 'waiting' && (
+          type == 'START_GAME' ||
+          type == 'ADD_AI' ||
+          type == 'REMOVE_PLAYER' ||
+          type == 'REMOVE_SPECTATOR' ||
+          type == 'UPDATE_TIMELINE' ||
+          type == 'UPDATE_ZONE' ||
+          type == 'TOGGLE_TEST_MODE' ||
+          type == 'UPDATE_INITIAL_CARD' ||
+          type == 'UPDATE_ALTERNATE_REALITIES'
+        )) ||
+        // --- In-game actions
+        (data.status == 'in-progress' && isPlayerInLobby(data.players, actionUid) && (
+          (type == 'VISIT_ZONE' && isValidPrompt(data, actionUid, 'visitZone')) ||
+          (type == 'VISIT_ZONE' && isValidPrompt(data, actionUid, 'anubisVisit')) ||
+          (type == 'SCORE_CARD' && isValidPrompt(data, actionUid, 'score')) ||
+          (type == 'SCORE_CARD' && isValidPrompt(data, actionUid, 'alien-contact')) || // Special case
+          (type == 'SCORE_CARD' && isValidPrompt(data, actionUid, 'cats')) || // Special case
+          (type == 'SCORE_CARD' && isValidPrompt(data, actionUid, 'space-age')) || // Special case
+          (type == 'PLAY_CARD' && isValidPrompt(data, actionUid, 'play')) ||
+          (type == 'ADVANCE_CROWN' && isValidPrompt(data, actionUid, 'advance')) ||
+          (type == 'CHOOSE_ACTION' && isValidPrompt(data, actionUid, 'choose')) ||
+          (type == 'DISCARD_AND_CONTINUE' && isValidPrompt(data, actionUid, 'discard')) ||
+          (type == 'DISCARD_MANY' && isValidPrompt(data, actionUid, 'discard-many')) ||
+          (type == 'DISCARD_MANY' && isValidPrompt(data, actionUid, 'discard-n')) ||
+          (type == 'CHANGE_HISTORY' && isValidPrompt(data, actionUid, 'changeHist')) ||
+          (type == 'DECLINE_CHANGE_HISTORY' && isValidPrompt(data, actionUid, 'changeHist')) ||
+          (type == 'RESOLVE_OPTIONAL_ZONE' && isValidOptionalZonePrompt(data, actionUid, payload)) ||
+          (type == 'RESOLVE_TOYS_CHOICE' && isValidPrompt(data, actionUid, 'toys-choice')) ||
+          (type == 'RESOLVE_DISCARD_FOR_MONEY' && isValidPrompt(data, actionUid, 'imperial-china')) ||
+          (type == 'RESOLVE_DISCARD_FOR_MONEY' && isValidPrompt(data, actionUid, 'imperial-china')) ||
+          (type == 'RESOLVE_INQUISITION' && isValidPrompt(data, actionUid, 'inquisition')) ||
+          (type == 'RESOLVE_INVENTOR' && isValidPrompt(data, actionUid, 'inventor')) ||
+          (type == 'RESOLVE_PREDICT_THE_FUTURE' && isValidPrompt(data, actionUid, 'predict-the-future')) ||
+          (type == 'RESOLVE_INVESTMENTS' && isValidPrompt(data, actionUid, 'investments-choice')) ||
+          (type == 'RESOLVE_SIMULATED_PARADISE_CHOICE' && isValidPrompt(data, actionUid, 'simulatedChoice')) ||
+          (type == 'RESOLVE_MOVE' && isValidPrompt(data, actionUid, 'move')) ||
+          (type == 'RESOLVE_SET_HQ' && isValidPrompt(data, actionUid, 'set-hq')) ||
+          (type == 'RESOLVE_TREASURE_MAP' && isValidPrompt(data, actionUid, 'treasure-map-choice')) ||
+          (type == 'RETREAT_CROWN' && isValidPrompt(data, actionUid, 'retreat')) ||
+          (type == 'SELECT_CYBERNETICS_PERPETUAL' && isValidPrompt(data, actionUid, 'cybernetics-perpetual')) ||
+          (type == 'SELECT_CYBERNETICS_HAND_CARD' && isValidPrompt(data, actionUid, 'cybernetics-hand')) ||
+          (type == 'SELECT_CARD_TO_PASS' && isValidPrompt(data, actionUid, 'pass-card')) ||
+          (type == 'RETURN_CARD' && isValidPrompt(data, actionUid, 'return-card')) ||
+          (type == 'RESOLVE_TRADE_GOODS' && isValidPrompt(data, actionUid, 'trade-goods-choice')) ||
+          (type == 'RESOLVE_GIZMO_CHOICE' && isValidPrompt(data, actionUid, 'gizmo-choice')) ||
+          (type == 'RESOLVE_Y2K_DISCARD' && isValidPrompt(data, actionUid, 'y2k-discard')) ||
+          (type == 'RESOLVE_BABYLONIAN_CHOICE' && isValidPrompt(data, actionUid, 'babylonian-choice')) ||
+          // Resigning / Replacing
+          (type == 'REPLACE_PLAYER' && (
+            // Host can replace anyone
+            (isHost(data, authUid) && 'playerIdToReplace' in payload) ||
+            // A player can replace themselves (resign)
+            (payload.playerIdToReplace == authUid)
+          ))
+        ))
+      );
+    }
+
+    function getPlayerIndexById(players, uid) {
+      return players.size() > 0 && players[0].id == uid ? 0 :
+         players.size() > 1 && players[1].id == uid ? 1 :
+         players.size() > 2 && players[2].id == uid ? 2 :
+         players.size() > 3 && players[3].id == uid ? 3 :
+         players.size() > 4 && players[4].id == uid ? 4 : -1;
+    }
+
+    function isAIPlayer(playerId) {
+      // AI player IDs are prefixed with "ai_".
+      // Human player UIDs from Firebase Auth cannot contain underscores.
+      return playerId.matches('.*_.*');
+    }
+
+    function isSpectator(spectators, uid) {
+      // Manually unrolled loop to check for spectator existence, up to a max of 5.
+      return (spectators.size() > 0 && spectators[0].id == uid) ||
+             (spectators.size() > 1 && spectators[1].id == uid) ||
+             (spectators.size() > 2 && spectators[2].id == uid) ||
+             (spectators.size() > 3 && spectators[3].id == uid) ||
+             (spectators.size() > 4 && spectators[4].id == uid);
+    }
+
+    function isHost(data, uid) {
+      return data.ownerId == uid;
+    }
+
+    function isPlayerInLobby(players, uid) {
+      return players != null && players is list && (getPlayerIndexById(players, uid) != -1)
+    }
+
+    function isNotPlayerInLobby(players, uid) {
+      return players == null || !(players is list) || (getPlayerIndexById(players, uid) == -1)
+    }
+
+    function isNotSpectator(spectators, uid) {
+      // Check that a spectator with the given uid does NOT exist in the list.
+      return !isSpectator(spectators, uid);
+    }
+
+    function isValidPrompt(data, uid, expectedPrompt) {
+      return uid in data.activePrompts && data.activePrompts[uid] == expectedPrompt;
+    }
+
+    function isValidOptionalZonePrompt(data, uid, payload) {
+      // For optional zone effects, the prompt name matches the zoneId in the payload.
+      return 'zoneId' in payload &&
+             uid in data.activePrompts &&
+             data.activePrompts[uid] == payload.zoneId;
+    }
+
+    // A user can only read and write their own session document.
+    match /user_sessions/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

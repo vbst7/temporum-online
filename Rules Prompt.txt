@@ -1,0 +1,25 @@
+Let's just delete the firestore rules thing and start from scratch. Here are the rules for use.
+
+User auth must be not null for any action.
+Any user may create a lobby
+
+If the lobby is in waiting state, the lobby owner can make any changes
+Any player not already in the lobby can join a lobby, unless the lobby has 5 players already (including AIs)
+Any player may change their own colour in the lobby.
+
+If the lobby is in-progress
+A player can resign themself no matter what.
+If the resigning player is the only human, empty the players array, which the cloud functions will take care of
+If there is another human player in a 2-player game, resigning will declare the opponent the winner and end the game. This is permitted at any time.
+If there is at least 3 players and at least one of them is human, the resigning player is simply replaced by an AI. This can happen at any time.
+
+The host can replace human opponents with AI no matter what. Only the host can do this.
+
+An update is allowed if the action type is equal to activePropts(player.uid) and the user who performing the action is the one who declared it.
+The prompt alien-contact is okay for action score.
+
+If the player is an AI, it does not have a uid, but can still do any update. The AI are played from the serverside code.
+
+A user can only read and write to their own session document
+
+Lobbies cannot be deleted by a player, that is done by a cloud function

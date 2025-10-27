@@ -1,0 +1,21 @@
+      <div class="automated-test-section">
+        <h2>Automated AI Tests</h2>
+        <button @click="onRunTestSuite" :disabled="isSuiteRunning && !isSuiteFinished" class="lobby-btn create-ai-btn">
+          <span v-if="isSuiteRunning && !isSuiteFinished">Running...</span>
+          <span v-else-if="isSuiteFinished">Rerun Test Suite</span>
+          <span v-else>Run Test Suite</span>
+        </button>
+        <p class="test-instructions">
+          Click to run the predefined test suite from <code>src/tests/testSuite.js</code>.
+        </p>
+        <div v-if="testSuiteResults.length > 0" class="test-suite-results">
+          <ul>
+            <li v-for="(result, index) in testSuiteResults" :key="index" :class="['test-result', result.status.toLowerCase()]" @click="showFailureDetails(result)">
+              <span class="test-status-indicator">{{ result.status }}</span>
+              <span class="test-name">{{ result.testName }}</span>
+              <span v-if="result.lobbyId" class="test-lobby-id">(Lobby: {{ result.lobbyId }})</span>
+              <span v-if="result.error" class="test-error-message">Error: {{ result.error }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>

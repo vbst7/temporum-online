@@ -1,0 +1,240 @@
+import { onSnapshot, doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp }  from "firebase/firestore";
+import { db } from "../firebaseConfig.js";
+import { gameData, user } from "./state.js";
+import { chooseNickname } from "./authService.js";
+
+// Real-time listener for the game lobby
+export function listenToLobby(lobbyId) {
+  // Clear any existing listener
+  if (user.value.lobbyUnsubscribe) {
+    user.value.lobbyUnsubscribe();
+  }
+  
+  const lobbyRef = doc(db, `lobbies/${lobbyId}`);
+  user.value.lobbyUnsubscribe = onSnapshot(lobbyRef, (docSnap) => {
+    if (docSnap.exists()) {
+      gameData.value = docSnap.data();
+    } else {
+      // Lobby was deleted, so clear our session
+      console.log("Lobby no longer exists.");
+      gameData.value = null;
+      // Clear user's session data from `user_sessions`
+      const sessionRef = doc(db, `user_sessions/${user.value.uid}`);
+      setDoc(sessionRef, { lobbyId: null }, { merge: true });
+    }
+  });
+
+  //adds user to the server's list of user sessions
+  setDoc(doc(db, `user_sessions`, user.value.uid), {
+    lobbyId: lobbyId,
+  });
+}
+
+export async function createLobby(nickName) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  // Generate a unique 5-character ID for the lobby
+  let lobbyId;
+  let lobbyRef;
+  let lobbySnap;
+  do {
+    lobbyId = Math.random().toString(36).substring(2, 7).toUpperCase();
+    lobbyRef = doc(db, "lobbies", lobbyId);
+    lobbySnap = await getDoc(lobbyRef);
+  } while (lobbySnap.exists());
+
+  // Ensures that the player nickname is not empty
+  if (!nickName) nickName = chooseNickname();
+
+  // Create the initial lobby state object
+  const newLobby = {
+    lobbyId,
+    ownerId: user.value.uid,
+    createdAt: serverTimestamp(), // Add creation timestamp
+    players: [{ id: user.value.uid, name: nickName, isAI: false, color: 'grey', hand: [], coins: 0, crowns: 0, crownCount: 0, resolutionStack: [] }],
+    status: "waiting", // 'waiting' or 'in-progress'
+    selectedZones: Array(10).fill(''),
+    initialCards: {}, // Maps playerId to cardId
+    deck: [],
+    discardPile: [],
+    zones: [],
+    resolutionStack: [],
+    postVisitQueue: [],
+    endOfTurnQueue: [],
+    activePrompts: {},
+  };
+  // Note: The 'pendingAction' field is added by client actions, not on creation.
+
+  // Add the new lobby document to Firestore
+  await setDoc(lobbyRef, newLobby);
+
+  // Return the new ID
+  return lobbyId;
+}
+
+export async function joinLobby(lobbyId,nickName) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'JOIN_LOBBY',
+      uid: user.value.uid,
+      actionId: Date.now(), // Unique ID for the action
+      payload: { nickName },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function exitLobby(lobbyId) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'LEAVE_LOBBY',
+      uid: user.value.uid,
+      actionId: Date.now(),
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function resignGame(lobbyId, playerId) {
+  if (!user.value || user.value.uid !== playerId) {
+    console.error("User not authenticated or not the resigning player.");
+    return;
+  }
+
+  // Resigning is just a specific case of replacing a player with an AI.
+  // The cloud function will handle the logic for what happens (end game, replace, etc.)
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'REPLACE_PLAYER',
+      uid: playerId, // The user is requesting to replace themselves
+      actionId: Date.now(),
+      payload: { playerIdToReplace: playerId },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function replacePlayerWithAI(lobbyId, playerIdToReplace) {
+  if (!user.value) {
+    console.error("User not authenticated to perform this action.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'REPLACE_PLAYER',
+      uid: user.value.uid,
+      actionId: Date.now(),
+      payload: { playerIdToReplace },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function addAIPlayer(lobbyId) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'ADD_AI',
+      uid: user.value.uid,
+      actionId: Date.now(),
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function removePlayer(lobbyId, playerIdToRemove) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'REMOVE_PLAYER',
+      uid: user.value.uid,
+      actionId: Date.now(),
+      payload: { playerIdToRemove },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function selectPlayerColor(lobbyId, playerId, color) {
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'CHANGE_COLOR',
+      uid: playerId,
+      actionId: Date.now(),
+      payload: { color },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function updateInitialCard(lobbyId, playerId, cardName) {
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'UPDATE_INITIAL_CARD',
+      uid: user.value.uid, // Assumes only the owner can do this
+      actionId: Date.now(),
+      payload: { playerId: playerId, cardName: cardName },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function updateSelectedZone(lobbyId, index, zoneName) {
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'UPDATE_ZONE',
+      uid: user.value.uid, // Assumes only the owner can do this
+      actionId: Date.now(),
+      payload: { index, zoneName },
+      timestamp: serverTimestamp()
+    }
+  });
+}
+
+export async function startGame(lobbyId) {
+  if (!user.value) {
+    console.error("User not authenticated.");
+    return;
+  }
+
+  const lobbyRef = doc(db, "lobbies", lobbyId);
+  await updateDoc(lobbyRef, {
+    pendingAction: {
+      type: 'START_GAME',
+      uid: user.value.uid,
+      actionId: Date.now(),
+      timestamp: serverTimestamp()
+    }
+  });
+}

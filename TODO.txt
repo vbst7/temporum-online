@@ -1,0 +1,91 @@
+Next TODO:
+
+Post-visit Loop
+After a player visits a Zone, there are multiple effects that may be triggered. They are as follows:
+Treasure Map prompts player to discard it for 2 cards (if it's in perpetual and the player just visited Time IV)
+University draws a card and promtps the player to discard a card (if it's in perpetual & the player just visited time II)
+Predict the Future prompts player to change history (if a player played it)
+Anubis Statuette prompts player to visit a zone (if a player played it)
+Maneuver prompts player to move to a real zone (if a player played it)
+
+It's possible a player will set up multiple of these effects (eg. play Anubis and Maneuver in Communist Utopia, or play Maneuver in Floating Cities when they have Treasure Map in perpetual) . The player should be able to choose the order in which these are resolved. They should not be prompted with them again after they have been resolved or declined
+
+After a player is done visiting a zone (ie. it's follow-up is done and there are no more promtps), look at everything in the post-visit queue. If there is nothing, then move on to end of turn. If there is one thing, then just let it do its prompt (eg. if the player visited Alien Contact and has Treasure Map, but no other card was played, just give them T-Map prompt). If there is more than one thing, then the player gets given option buttons of which one to resolve first. Remove it from the post-visit queue. After one is resolved fully (eg. player clicked "Predict the Future" and then clicked "Decline") return to the "look at everything in post-visit queue" logic. Do this until the PVQ is empty.
+
+It's possible that multiple players will play a post-visit card on one turn (eg. P1 plays Anubis with Warm Globe, P2 then plays Anubis as well). In this case, P1 does not get a choice, as they are only involved in one post-visit effect. Same with P2. P1 finishes all of their Post-Visit effects, and then P2 is prompted with their post-visit effects. Only after all players have resolved their post-visit effects do we move on to the turn end logic
+
+End-of-turn Loop
+The effects here are: Step on a Butterfly, Investments, Hideout, Sunboat of Ra and Poison. Much like the post-visit loop, the player chooses the order in which they are executed, until there is only one, which is executed automatically.
+Poison steals $4 from the player and prompts them to discard a card (and removes itself from the player).
+If the player has Hideout in end-of-turn perpetuals & they have at least $40 (and have not already taken this bonus), they are prompted to advance a crown
+If the player has Investments in end-of-turn perpetuals & they have gained at least $2 this turn (and have not already declined this option), they are prompted to resolveInvestments
+If the player has Sunboat of Ra in EoT perpetuals & the previous turn was not theirs (and have not already declined this option), they are prompted to discard SoR to set up another turn after this one
+
+Start-of-turn Loop
+The effects here are: Cold War, Dark Ages, Beggar, Cache, Secret Cards
+If the player is alone in Cold War (and have not already taken this bonus), they get $4.
+If the player is in Dark Ages (and have not already taken this punishment), they discard a card
+If the player has a Beggar and they have less than $4 (and have not already taken this bonus), their Beggar gains $2
+If the player has a Cache  (and have not already declined this option), they are given the option to discard it and play its set-aside card.
+If the player has any "Secret" card in their hand  (and have not already declined this option), they are given the option to discard it (by clicking on it) to activate its bonus.
+
+Start-of-visit loop
+The effects here are: HQ, Primitive Paradise, Zombie, Sage
+If the player has an HQ in this zone, they get $2
+If the player is alone and the zone has $2 on it, they take those $2
+If the zone has a Zombie on it, the player loses $2
+If the player has Sage and they rule the zone's time, they draw a card
+The order only matters if there is a Zombie. If there is a zombie, give the player a choice of order. Otherwise, just do all the remaining effects
+
+Post-play loop
+The effects are GoP, Revolutionaries, Ambassador
+If the player has GoP in perpetual, they draw a card
+If the player has Revolutionaries, they advance a crown from Time II
+If the player has Ambassador & at least $4, they are given a prompt to spend $4 to advance a crown
+The order only matters if there is an Ambassador. If there is Ambassador, give the player a choice of order. Otherwise, just do all the remaining effects.
+
+Neolithic Renaissance
+Meritocracy
+Gold Rush
+Capitalist Utopia
+Robotic Utopia
+
+Bronze Age
+Tibetan Empire
+Earth United
+Green World
+
+Kingdom of Trilobites
+New France
+Rome Eternal
+Quiet Planet
+
+Three Kingdoms
+Cultural Revolution
+Russian Revolution
+Zombie Apocalypse
+Exodus
+
+Alien Egypt
+
+Poison Earth
+
+Secret Cards (at least one)
+Dark Ages
+
+Then get started on cards
+
+
+Issues:
+
+The second Space Age score should be optional. Rare this would come up though.
+Very rare edge case: Simulated Egypt Zones should allow you to advance a crown from Time IV if Exodus is real and you have all crowns in Time IV.
+Visiting French Revolution or Trojan War and failing to be prompted to Play/Score means you don't keep the drawn card (not a real issue, very rare you would visit said zone just for 1 card [Info Age maybe])
+In one AI game, the bot went to Egypt, and was forever prompted to score. It kept sending a fake card index
+
+Mom discarded forced for engineer despite having other card? (She tried to click the other card though...) Issue probably resolved when fixing hand
+
+
+
+
+

@@ -1,0 +1,350 @@
+[
+[
+	{
+		"id": "late-jurassic",
+		"name": "Late Jurassic",
+		"description": "Score a card, play a card, or draw 2 cards.\nChange history here.",
+		"age": "1",
+		"color": "white"
+	},
+	{
+		"id": "stone-age",
+		"name": "Stone Age",
+		"description": "Score a card. Gain $2 per Time you have no ♛ in.",
+		"age": "1",
+		"color": "yellow"
+	},
+	{
+		"id": "ancient-egypt",
+		"name": "Ancient Egypt",
+		"description": "Score a card. If you rule here, advance a ♛ you have here.",
+		"age": "1",
+		"color": "yellow"
+	},
+	{
+		"id": "ice-age",
+		"name": "Ice Age",
+		"description": "Score a card. Each other player in a Time you rule loses $3.",
+		"age": "1",
+		"color": "yellow"
+	},
+	{
+		"id": "primitive-paradise",
+		"name": "Primitive Paradise",
+		"description": "Score a card.",
+		"box": "Setup: Put $2 on each Zone. The first player to visit a Zone alone takes the $2 from it.",
+		"age": "1",
+		"color": "yellow"
+	},
+	{
+		"id": "time-of-legends",
+		"name": "Time of Legends",
+		"description": "Score a card, advancing an extra ♛.",
+		"age": "1",
+		"color": "yellow"
+	},
+	{
+		"id": "ancient-greece",
+		"name": "Ancient Greece",
+		"description": "Score a card, play a card, or draw 2 cards.\nYou may pay $4 to draw a card.",
+		"age": "1",
+		"color": "white"
+	},
+	{
+		"id": "iron-age",
+		"name": "Iron Age",
+		"description": "Score a card, paying $2 less per Time you rule.",
+		"age": "1",
+		"color": "yellow"
+	}
+],
+[
+	{
+		"id": "pax-buddha",
+		"name": "Pax Buddha",
+		"description": "Score a card, play a card, or draw 2 cards.\nEach player draws a card (including you).",
+		"age": "2",
+		"color": "white"
+	},
+	{
+		"id": "renaissance",
+		"name": "Renaissance",
+		"description": "If you rule here, draw 3 cards. Otherwise, draw 2 cards.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "feudal-japan",
+		"name": "Feudal Japan",
+		"description": "Draw 2 cards. If you rule here, you may discard your hand, then draw that many cards.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "imperial-china",
+		"name": "Imperial China",
+		"description": "Score a card, play a card, or draw 2 cards.\nYou may discard a card to gain $4",
+		"age": "2",
+		"color": "white"
+	},
+	{
+		"id": "age-of-cults",
+		"name": "Age of Cults",
+		"description": "Draw 2 cards. Each player with any cards in hand passes one left to the next such player, at once.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "crusades",
+		"name": "Crusades",
+		"description": "Draw 2 cards. Gain $2 per player in Time I.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "plague",
+		"name": "Plague",
+		"description": "Draw 2 cards. Each player in Time I or Time III discards a card.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "roman-empire",
+		"name": "Roman Empire",
+		"description": "Draw 2 cards. If you rule here, gain $2. Otherwise, lose $2.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "holy-norse-empire",
+		"name": "Holy Norse Empire",
+		"description": "Draw 2 cards. If you rule here, gain $3.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "inquisition",
+		"name": "Inquisition",
+		"description": "Draw 2 cards. If you rule here, each other player discards a card or loses $2, their choice.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "aztec-invasion",
+		"name": "Aztec Invasion",
+		"description": "Draw 2 cards. If you have no ♛ here, advance one of your ♛ from Time I.",
+		"age": "2",
+		"color": "green"
+	},
+	{
+		"id": "egyptian-america",
+		"name": "Egyptian America",
+		"description": "Draw 2 cards. If you rule here, advance a ♛ you have here.",
+		"age": "2",
+		"color": "green"
+	}
+],
+[
+	{
+		"id": "age-of-discovery",
+		"name": "Age of Discovery",
+		"description": "Play a card. Gain $1 per ♛ you have here.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "balloon-revolution",
+		"name": "Balloon Revolution",
+		"description": "Play a card. Gain $2 per other player here.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "american-civil-war",
+		"name": "American Civil War",
+		"description": "Play a card. Gain $2 per Time you rule.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "plutocracy",
+		"name": "Plutocracy",
+		"description": "Play a card. If you have more $ than everyone else, advance one of your ♛.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "prohibition-era",
+		"name": "Prohibition Era",
+		"description": "Play a card. Gain $2. Each player who rules here gains $1",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "cold-war",
+		"name": "Cold War",
+		"description": "Play a card.",
+		"box": "When you start a turn alone here, gain $4.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "great-depression",
+		"name": "Great Depression",
+		"description": "Score a card, play a card, or draw 2 cards.\nEach player not in Time IV loses $2 (including you).",
+		"age": "3",
+		"color": "white"
+	},
+	{
+		"id": "bureaucracy",
+		"name": "Bureaucracy",
+		"description": "Play a card. Each other player with $12 or more retreats one of their ♛.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "police-state",
+		"name": "Police State",
+		"description": "Play a card.",
+		"box": "You cannot move to Time I or Time II from here.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "summer-of-love",
+		"name": "Summer of Love",
+		"description": "Score a card, play a card, or draw 2 cards.\nEach player gains $2 (including you).",
+		"age": "3",
+		"color": "white"
+	},
+	{
+		"id": "french-revolution",
+		"name": "French Revolution",
+		"description": "Play a card. If you rule here, draw a card.",
+		"age": "3",
+		"color": "brown"
+	},
+	{
+		"id": "industrial-revolution",
+		"name": "Industrial Revolution",
+		"description": "Play a card. If you rule here, you may return that card to your hand.",
+		"age": "3",
+		"color": "brown"
+	}
+],
+[
+	{
+		"id": "nanotech-wonderland",
+		"name": "Nanotech Wonderland",
+		"description": "Gain $2 per card in your hand.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "robot-uprising",
+		"name": "Robot Uprising",
+		"description": "Advance one of your ♛. Draw a card per Time you rule.",
+		"age": "4",
+		"color": "green"
+	},
+	{
+		"id": "space-age",
+		"name": "Space Age",
+		"description": "Score a card. Then if you rule at least two Times, you may score another card.",
+		"age": "4",
+		"color": "yellow"
+	},
+	{
+		"id": "utopia",
+		"name": "Utopia",
+		"description": "Gain $4. Draw a card.",
+		"box": "While here on other players' turns, you cannot lose or discard cards.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "age-of-cats",
+		"name": "Age of Cats",
+		"description": "You may pay $10. If you do, score the same card twice (paying twice).",
+		"age": "4",
+		"color": "yellow"
+	},
+	{
+		"id": "age-of-toys",
+		"name": "Age of Toys",
+		"description": "You may pay $4. If you do, draw 2 cards; discard one and play the other.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "communist-utopia",
+		"name": "Communist Utopia",
+		"description": "If you have less than $12, play a card. Then if you have less than $12, play another card.",
+		"age": "4",
+		"color": "brown"
+	},
+	{
+		"id": "information-age",
+		"name": "Information Age",
+		"description": "Visit each real Zone you have not visited yet this turn in which you have 4 ♛ or more, from present to past.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "nuclear-wasteland",
+		"name": "Nuclear Wasteland",
+		"description": "If you rule here, gain $2 and visit an earlier real Zone.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "savagery",
+		"name": "Savagery",
+		"description": "Discard your hand. Draw 3 cards.",
+		"age": "4",
+		"color": "green"
+	},
+	{
+		"id": "steampunk-empire",
+		"name": "Steampunk Empire",
+		"description": "Discard a card. If you did, advance three of your ♛.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "warm-globe",
+		"name": "Warm Globe",
+		"description": "Gain $8. Each player plays a card, in turn order, starting with you.",
+		"age": "4",
+		"color": "brown"
+	},
+	{
+		"id": "icy-wasteland",
+		"name": "Icy Wasteland",
+		"description": "Score a card, play a card, or draw 2 cards.\nIf you rule here, each other player loses $2.",
+		"age": "4",
+		"color": "white"
+	},
+	{
+		"id": "mere-anarchy",
+		"name": "Mere Anarchy",
+		"description": "Lose your $. Gain $3 per ♛ you have here.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "age-of-cybernetics",
+		"name": "Age of Cybernetics",
+		"description": "You may play a card from your hand as a copy of a Perpetual card you have in play.",
+		"age": "4",
+		"color": "silver"
+	},
+	{
+		"id": "alien-contact",
+		"name": "Alien Contact",
+		"description": "Draw a card. You may score that card (paying).",
+		"age": "4",
+		"color": "silver"
+	}
+]
+]

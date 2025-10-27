@@ -1,0 +1,284 @@
+[
+  {
+  "id": "treasure-map",
+  "name": "Treasure Map",
+  "description": "After you visit a Time IV Zone, you may discard this from play to draw 2 cards.",
+  "coin": "6",
+  "type": "P",
+  "score": "6",
+  "cost": "12"
+  }
+,
+  {
+    "id": "a-place-outside-time",
+    "name": "A Place Outside Time",
+    "description": "This is a Zone only you can visit; it says 'Gain $8 or advance 2 of your ♛.'",
+    "coin": "12",
+    "type": "P",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "ambassador",
+    "name": "Ambassador",
+    "description": "When you play another card, after resolving it, you may pay $4 to advance one of your ♛.",
+    "coin": "10",
+    "type": "P",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "ancient-scroll",
+    "name": "Ancient Scroll",
+    "description": "Each player draws a card.",
+    "coin": "12",
+    "type": "M",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "assassins-dagger",
+    "name": "Assassin's Dagger",
+    "description": "Advance one of your ♛. Then gain $4 per Time you rule.",
+    "coin": "4",
+    "type": "M",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "bank",
+    "name": "Bank",
+    "description": "The first time you gain $ each turn, gain an extra 4.",
+    "coin": "8",
+    "type": "P",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "battle-plans",
+    "name": "Battle Plans",
+    "description": "Each other player retreats a ♛ of theirs that you choose.",
+    "coin": "8",
+    "type": "M",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "beggar",
+    "name": "Beggar",
+    "description": "At the start of your turn, if you have less than $4, put $2 from the supply on this. You may spend $ from this.",
+    "coin": "6",
+    "type": "P",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "cache",
+    "name": "Cache",
+    "description": "Put a card from your hand on this face down. At the start of your turn, you may discard this from play to play that card.",
+    "coin": "4",
+    "type": "P",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "cutthroats-cutlass",
+    "name": "Cutthroat's Cutlass",
+    "description": "Retreat one of your ♛. If you did, rule another Time you rule.",
+    "coin": "12",
+    "type": "M",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "detective",
+    "name": "Detective",
+    "description": "When you have no cards in hand and draw, draw an extra card.",
+    "coin": "8",
+    "type": "P",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "golden-apple",
+    "name": "Golden Apple",
+    "description": "Each other player moves here (they don't visit this Zone, they just move).",
+    "coin": "12",
+    "type": "M",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "hacker",
+    "name": "Hacker",
+    "description": "You may score a card instead of playing a card, and vice versa.",
+    "coin": "8",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "hidden-cave",
+    "name": "Hidden Cave",
+    "description": "When you discard a card, you may return this to your hand.",
+    "coin": "10",
+    "type": "P",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "hideout",
+    "name": "Hideout",
+    "description": "At the end of your turn, if you have a least $40, advance one of your ♛.",
+    "coin": "8",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "inventors-journal",
+    "name": "Inventor's Journal",
+    "description": "Draw a card per player (including you). Give each other player a card from your hand.",
+    "coin": "11",
+    "type": "M",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "maneuver",
+    "name": "Maneuver",
+    "description": "After resolving this Zone, you may move to any real Zone (without visiting it).",
+    "coin": "12",
+    "type": "M",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "meet-younger-self",
+    "name": "Meet Younger Self",
+    "description": "Draw 3 cards.",
+    "score-instruction": "When you score this, draw a card.",
+    "coin": "0",
+    "type": "M",
+    "cost": "12",
+    "score": "5"
+  },
+  {
+    "id": "mysterious-relic",
+    "name": "Mysterious Relic",
+    "description": "Until your next turn, history can't change.",
+    "coin": "12",
+    "type": "M",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "panacea",
+    "name": "Panacea",
+    "description": "If you rule Time III, gain $4. If you rule Time II, draw a card. If you rule Time I, advance one of your ♛.",
+    "coin": "8",
+    "type": "M",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "pilgrims",
+    "name": "Pilgrims",
+    "description": "Score a card paying $12 less, advancing 2 ♛ less.",
+    "coin": "0",
+    "type": "M",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "revolutionaries",
+    "name": "Revolutionaries",
+    "description": "When you play another card, advance one of your ♛ from Time II (after resolving the played card).",
+    "coin": "2",
+    "type": "P",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "secret-mission",
+    "name": "Secret Mission",
+    "description": "Draw a card. Advance one of your ♛. At the start of your turn, you may discard this, to advance to a real Time.",
+    "coin": "4",
+    "type": "S",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "secret-plot",
+    "name": "Secret Plot",
+    "description": "Discard a card. Score a card (paying). Play a card. At the start of your turn, you may discard this, to advance one of your ♛.",
+    "coin": "0",
+    "type": "S",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "secret-stash",
+    "name": "Secret Stash",
+    "description": "If you're alone, gain $1 per ♛ you have here. At the start of your turn, you may discard this, to gain $4.",
+    "coin": "10",
+    "type": "S",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "secret-weapon",
+    "name": "Secret Weapon",
+    "description": "Draw a card. Play a card. At the start of your turn, you may discard this, to pick a Time and rule it this turn.",
+    "coin": "0",
+    "type": "S",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "sultans-scimitar",
+    "name": "Sultan's Scimitar",
+    "description": "At the start of your next turn, advance a ♛ from each Time you rule, present to past.",
+    "coin": "10",
+    "type": "M",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "sunboat-of-ra",
+    "name": "Sunboat of Ra",
+    "description": "At the end of your turn, if the previous turn was another player's, you may discard this from play, to take another turn.",
+    "coin": "2",
+    "type": "M",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "tactician",
+    "name": "Tactician",
+    "description": "When scoring a card, you may pay $4 extra to advance an extra ♛ or one less ♛.",
+    "coin": "10",
+    "type": "P",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "university",
+    "name": "University",
+    "description": "After you visit a Time II Zone, draw a card, then discard a card.",
+    "coin": "12",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "visionary",
+    "name": "Visionary",
+    "description": "Advance one of your ♛. Play another card.",
+    "score-instruction": "When you score this, you may score another card.",
+    "coin": "0",
+    "type": "M",
+    "cost": "28",
+    "score": "8"
+  }
+]

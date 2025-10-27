@@ -1,0 +1,358 @@
+[
+  [
+    {
+      "id": "age-of-atlantis",
+      "name": "Age of Atlantis",
+      "description": "Score a card.\nMove your HQ to any Zone. When you visit the Zone with your HQ, gain $2 first.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "alien-egypt",
+      "name": "Alien Egypt",
+      "description": "If you have $100 or more, you win.\nOtherwise, either gain $8 or score a card.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "babylonian-bazaar",
+      "name": "Babylonian Bazaar",
+      "description": "Score a card.\n⧖: Each player may pay $10 to draw 2 cards and advance 2 of their ♛.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "bronze-age",
+      "name": "Bronze Age",
+      "description": "Score a card.\nIf you did, gain $1 per ♛ you have here.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "dawn-of-man",
+      "name": "Dawn of Man",
+      "description": "Score a card.\nEach player (including you) advances a ♛ of theirs from Time I.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "kingdom-of-trilobites",
+      "name": "Kingdom of Trilobites",
+      "description": "Score a card.",
+      "box": "After you may change history here, you may in Time II, then may in Time III.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "neolithic-renaissance",
+      "name": "Neolithic Renaissance",
+      "description": "Score a card.\n⧖: Each player draws until they have 3 cards in hand.",
+      "age": "1",
+      "color": "yellow"
+    },
+    {
+      "id": "trojan-war",
+      "name": "Trojan War",
+      "description": "Score a card. Lose your $. Draw a card.",
+      "age": "1",
+      "color": "yellow"
+    }
+  ],
+  [
+    {
+      "id": "ancient-carthage",
+      "name": "Ancient Carthage",
+      "description": "Draw 2 cards.\nTake a Trade Goods card.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "bright-ages",
+      "name": "Bright Ages",
+      "description": "Draw 3 cards. Put a card from your hand on top of the deck, face up.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "byzantine-empire",
+      "name": "Byzantine Empire",
+      "description": "Draw 2 cards.",
+      "box": "When you move here, gain $1 per card in your hand.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "celtic-paradise",
+      "name": "Celtic Paradise",
+      "description": "Draw 2 cards.\n⧖: Each player with less than $8 gains $8.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "dark-ages",
+      "name": "Dark Ages",
+      "description": "Draw 3 cards.",
+      "box": "When you start a turn here, discard a card.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "empire-of-the-amazons",
+      "name": "Empire of the Amazons",
+      "description": "If you rule here, retreat a ♛ you have here and draw 4 cards. Otherwise, draw 2 cards.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "greek-america",
+      "name": "Greek America",
+      "description": "Draw 2 cards. If you rule here, you may put a Base here. Either way, if you have a Base here, you may discard a card to gain $6.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "mongolian-empire",
+      "name": "Mongolian Empire",
+      "description": "Draw 2 cards. If you rule here, other players with as many or more cards in hand than you discard a card.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "scientist-enclave",
+      "name": "Scientist Enclave",
+      "description": "You may retreat a ♛ of yours from here. If you do, take a Gizmo card. Otherwise, draw 2 cards.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "three-kingdoms",
+      "name": "Three Kingdoms",
+      "description": "Draw 2 cards.\n⧖: Each player who doesn't rule here discards a card and loses $4.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "tibetan-empire",
+      "name": "Tibetan Empire",
+      "description": "Draw 2 cards.\nIf you rule here, you don't get any $ for the rest of the turn, and may play a card.",
+      "age": "2",
+      "color": "green"
+    },
+    {
+      "id": "viking-america",
+      "name": "Viking America",
+      "description": "Draw 2 cards.",
+      "box": "When you move from here to a Time you rule, gain $4.",
+      "age": "2",
+      "color": "green"
+    }
+  ],
+  [
+    {
+      "id": "age-of-piracy",
+      "name": "Age of Piracy",
+      "description": "Play a card. Players in Time I and II lose $2. If you rule here, gain the lost $.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "age-of-plastic",
+      "name": "Age of Plastic",
+      "description": "Play a card. Choose one: Gain $4 if you rule here; or draw a card if you rule Time II.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "atomic-age",
+      "name": "Atomic Age",
+      "description": "Play a card.\nIf you rule here, you may move to another real Zone (without visiting it).",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "cultural-revolution",
+      "name": "Cultural Revolution",
+      "description": "Play a card.\n⧖: Each player with no ♛ here advances a ♛ of theirs from Time I to here.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "dutch-golden-age",
+      "name": "Dutch Golden Age",
+      "description": "Play a card. If you rule here, gain half as much $ as you've gained this turn (round down).",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "gold-rush",
+      "name": "Gold Rush",
+      "description": "Play a card. If you're alone here, put $1 from the supply here. Either way, gain $ equal to the $ here.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "meritocracy",
+      "name": "Meritocracy",
+      "description": "Play a card. Gain $2 per card you've drawn this turn.",
+      "box": "When you advance a ♛, it comes from here if it can.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "new-france",
+      "name": "New France",
+      "description": "Play a card. If you rule here, you may put a Base here. Either way, if you have a Base here, advance one of your ♛.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "pax-britannica",
+      "name": "Pax Britannica",
+      "description": "Play a card.\nIf you have at least 1 ♛ in each Time, gain 4; if at least 2 ♛, gain 8 instead.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "rome-eternal",
+      "name": "Rome Eternal",
+      "description": "Play a card.\nIf you rule here, take the Golden Laurels from the supply or the player that has it.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "russian-revolution",
+      "name": "Russian Revolution",
+      "description": "Play a card.\nIf you rule here, each other player retreats a ♛ of theirs from here or later.",
+      "age": "3",
+      "color": "brown"
+    },
+    {
+      "id": "y2k",
+      "name": "Y2K",
+      "description": "Play a card.\n⧖: Each player may discard a Perpetual card to gain $12.",
+      "age": "3",
+      "color": "brown"
+    }
+  ],
+  [
+    {
+      "id": "age-of-superheroes",
+      "name": "Age of Superheroes",
+      "description": "If you are alone here with exactly 0 cards in hand or $0, advance a ♛ of yours from Time I to here.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "capitalist-utopia",
+      "name": "Capitalist Utopia",
+      "description": "Gain $1 per $2 you have.",
+      "box": "If you rule here, you rule all Times.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "earth-united",
+      "name": "Earth United",
+      "description": "Choose a Momentary card in your hand. Each other player plays it in turn order, then you play it twice.",
+      "age": "4",
+      "color": "brown"
+    },
+    {
+      "id": "endless-city",
+      "name": "Endless City",
+      "description": "Gain $8. Take a Trade Goods card.",
+      "box": "When this Zone becomes real, each player draws a card.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "exodus",
+      "name": "Exodus",
+      "description": "Advance 2 ♛ of yours from a Time you rule, then a third if you still rule there.",
+      "box": "Winning requires advancing an extra ♛ from Time IV.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "floating-cities",
+      "name": "Floating Cities",
+      "description": "If you have exactly 6 cards in hand, score a card then play a card.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "green-world",
+      "name": "Green World",
+      "description": "Score a card. Gain $2 per ♛ you moved here this turn.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "mafia-city-states",
+      "name": "Mafia City-States",
+      "description": "Every other player pays you $1, Score a card.",
+      "box": "When this Zone becomes real, each player gains $2.",
+      "age": "4",
+      "color": "yellow"
+    },
+    {
+      "id": "quiet-planet",
+      "name": "Outer Planet",
+      "description": "Look through the pile here and take a card from it.",
+      "box": "Setup: Put the top 12 cards of the deck here in a pile.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "poison-earth",
+      "name": "Poison Earth",
+      "description": "Gain $8 and draw 2 cards. Take a Poison token.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "robotic-utopia",
+      "name": "Robotic Utopia",
+      "description": "If you rule here, play the card here, returning it here.",
+      "box": "Setup: Put a Momentary card from the deck here.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "scrapyard-world",
+      "name": "Scrapyard World",
+      "description": "Score a card, paying by discarding a card per $4 cost, rather than paying $.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "simulated-paradise",
+      "name": "Simulated Paradise",
+      "description": "If you rule here, put the simulation token in any other Zone. Either way, follow the instructions for the Zone with the token.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "singularity",
+      "name": "Singularity",
+      "description": "If the previous turn was another player's, you may pay $10. If you do, take two more turns after this.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "underground-haven",
+      "name": "Underground Haven",
+      "description": "You may discard a card. If you do, gain $12 and if you rule here, take the Sage from the supply or the player that has it.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "zombie-apocalypse",
+      "name": "Zombie Apocalypse",
+      "description": "You may pay $2 for a Gizmo.",
+      "box": "Setup: 3 Zombie here. Take one with you when moving, you visit a Zone, first lose $2 if a Zombie is there.",
+      "age": "4",
+      "color": "silver"
+    }
+  ]
+]

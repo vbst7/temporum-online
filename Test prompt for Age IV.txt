@@ -1,0 +1,154 @@
+Test prompt for Age IV
+Great! Can you write tests for all the Age IV zones?
+Nanotech Wonderland: AI has 4 cards $0. Result: $8
+Robot Uprising: AI has 0 cards. Advances a crown. Result: 2 cards
+Space Age: AI has 2 artists in hand and $8. It scores one, advances 4 crowns, accepts scorign another, scores it, advances 4 crowns. Success: scoretrack [2,8,0,0]
+Space Age 2: Same as before, but P2 has scoretrack [0,5,0,0] so after scoring the first artist p2 is not prompted to score the other. Success scoretrack [6,4,0,0]
+SA 3: Same as the first, but P1 only has $6. Success scoretrack [6,4,0,0]
+SA 4: Same as first, but player decliens to score second card
+Utopia: no cards no coins. SUccess: 1 card $4
+Age of Cats: In all cases player has Artist.
+1: Has $10 and accepts, cannot score. Success $0 [10,0,0,0] score
+2: Has $18 and accepts, scores, advances 8 crowns. SUccess $0 [2,8,0,0]
+3: Has $16 and accepts, cannot score. Success $2 [10,0,0,0]
+Age of Toys:
+In all cases the top 2 cards of the deck are Golden Goose and Kill Your Grandfather. Player 1 has no cards
+1: Has $0. Success $0 0 cards
+2: Has $4. Declines. Success $4 0 cards
+3: Has $4. Accepts. Plays first card. Success $16 0 cards
+4: Has $4. Accepts. Plays second card. Success $5 2 cards
+Communist Utopia
+If player has 2 cards, they have Tulip Stocks first and then Golden Goose
+1: Has $0, plays Tulip Stocks, plays Goose. Success: $25 0 cards
+2: Has $3, plays Tulip Stocks, plays Golden Goose. Success: $12 1 card
+3: Has $12, plays Tulip Stocks. Success: $12 2 cards
+4: Primitive Paradise is Age I zone. Has $10, plays Tulip Stocks. Success: $12 2 cards
+Nuclear Wasteland:
+Rule Time IV. No cards in hand, no coins. Visit Nuclear Wasteland, visit age II (zone 1) which is Crusades. Success: $2 2 cards
+Savagery:
+1: No cards in hand. Success: 3 cards
+2: 2 cards in hand. Success: 3 cards
+5: 5 cards in hand.  Success: 3 cards
+Steampunk Empire:
+1: No cards in hand. Success: [10,0,0,0]
+2: One card in hand, discard, advance 3 crowns. Success: [{7,3,0,0]
+Alien Contact
+In all cases, top of deck is Artist
+1: Has $4, score the card, advance 4 crowns. Success: $0 [6,4,0,0]
+2: Has $2. Success: $2, Artist is in hand
+3: Has $4, decline to score. Success: $42, Artist is in hand
+Age of Cybernetics
+By default, the player has Friends in Old Places in their perpetuals, and $0
+1: Has Artist in hand, chooses it, chooses Friends. Success: $0 and two copies of Friends in perpetuals
+2: Has no card in hand. Success: $0
+3: Has Artist in hand and no perpetual card. Success: $0, hand size of 1
+Icy Wasteland
+By default, P2 exists and has $4
+1: P1 rules Age IV and has no cards. Chooses to draw cards here. Success: P2 has $2, P1 has hand size of 2
+2: P1 rules Age IV and has Artist & $4. Chooses to score here. Scores Artist, advances 4 crowns. Success: P2 has $2, P1 has hand size of 0
+3: P1 has scoretrack of [0,0,10,0] and has Artist & $4. Chooses to score here. Scores Artist, advances 4 crowns. Success: P2 has $2, P1 has hand size of 0
+4: P1 does not rule Age IV and has no cards. Chooses to draw cards here. Success: P2 has $4, P1 has hand size of 2
+
+Information Age
+Warm Globe
+
+Momentary cards:
+Default Zones are Ancient Egypt 0, Cold War 4, Steampunk 7
+For every momentary card, by default the player starts with $0, just one card in hand, visits Cold War, plays the card. Success: Player coins === the card's 'coin' value, hand has no cards in it.
+Special cases:
+Artist: Success: hand has 1 card
+Bag of Loot: Success: hand has Bag of Loot
+Barbarian Horde:
+1: After playing card, DISCARDMANY with an empty array.
+2: Start with 2 cards. After playing card, DISCARDMANY with an empty array. Success: hand has 1 card
+3: Start with 2 cards. After playing, DISCARDMANY with an array [0]. Advance one crown. Success: scoretrack [9,1,0,0]
+Crown Jewels:
+1: After playing card, DISCARDMANY with an empty array.
+2: Start with 2 cards. After playing card, DISCARDMANY with an empty array. Success: hand has 1 card
+3: Start with 2 cards. After playing, DISCARDMANY with an array [0]. Success: $15
+Engineer:
+1: Nothing different
+2: Start with 3 cards. After playing Engineer, DISCARD2 with an array of the first 2 cards in hand
+Gladiator's Gladius: Success: hand has 1 card
+Golden Goose: Player 2 has $0. Success: Player 2 has $5
+Infected Rat:
+1: P2 has 1 card in hand, discards it. Success: P2 has no cards
+2: P1 has 2 cards in hand, P2 has 1 card. Success: P2 has 1 card, P1 has 1 card
+3: Zone 7 is Utopia. P2 has 1 card in hand, discards it. Success: P2 has 1 card
+Inventor:
+1: choose draw. Success: P1 has 2 cards
+2: choose 8 coins. SUccess: $12
+3: choose advance. Advance 2 crowns. Success: [8,2,0,0]
+Kill Your Grandfather:
+1: Success: P1 has 2 cards
+2: P1 starts with 2 cards. Success: P1 has 2 cards
+Papal Tiara:
+1: As normal
+2: Start with Artist in hand. Score Artist. Advance 4 crowns. Success: [6,4,0,0]
+3: Start with Tulip Stocks in hand. Score Tulip Stocks. Success: 1 card in hand
+Shogun's Katana: Success: $12
+Trinket:
+1: Artist in hand. Play trinket, then play Artist. Success: $12, 1 card
+2: Same as default
+Tulip Stocks:
+1: P2 has $5. Success: P2 has $0
+2: Zone 7 is Utopia. P2 has $5. Success: P2 has $5
+
+Write some tests for Anubis Statuette
+P1 has no coins, Anubis Statuette and Artist in hand
+Visit Cold War, play Anubis
+Visit Steampunk, discard Artist
+Advance 3 crowns
+Success: No cards, $2, scoretrack of [7,3,0,0]
+
+P1 has no coins, Investments in perpetual, Anubis Statuette and Artist in hand
+Visit Cold War, play Anubis
+Visit Prohibition Era, play Artist
+Discard Investments
+Success: 1 card, $18
+
+Warm Globe
+Everyone has $0. P1 visits Warm Globe. P1 plays Artist. P2 plays Artist.
+Success: P1 has $16, P2 has $8
+
+Everyone has $0. P1 visits Warm Globe. P1 plays Artist. P2 plays Anubis. P2 visits Cold War. P2 plays Artist
+Success: P1 has $16, P2 has $10
+
+Everyone has $0. P1 visits Warm Globe. P1 plays Infected Rat. P2 discards Artist. P2 has no cards left to play
+Success: P1 has $16, P2 has $0 and no cards
+
+Everyone has $0. P1 visits Warm Globe. P1 plays Artist. P2 plays Infected Rat.
+Success: P1 has $16 and no cards, P2 has $8
+
+Everyone has $0. P1 visits Warm Globe. P1 plays Anubis. P2 plays Anubis. P1 visits Cold War. P1 plays Artist. P2 visits Cold War. P2 plays Artist
+Success: P1 has $18, P2 has $10
+
+Information Age
+P1 has scoretrack [4,4,0,2], timeline Ice Age, Crusades, ... , Information Age
+P1 has $4 and Artist in hand
+P1 visits Info Age
+P1 scores Artist
+Success: P1 has scoretrack [0,8,0,2], no cards, no $
+
+
+P1 has scoretrack [0,4,4,2], timeline Ice Age, Crusades, Cold War , Information Age
+P1 has Anubis and Artist in hand
+P1 visits Cold War
+P1 plays Anubis
+Visit Info Age
+P1 plays Artist
+Success: P1 has Artist in hand
+
+P1 has scoretrack [0,4,4,2], timeline Ice Age, Crusades, Cold War , Information Age
+P1 visits Cold War
+Visit Info Age
+P1 plays Settlers, advances 1 crown from II to III
+Success: P1 has no cards in hand
+
+P2 has scoretrack [0,4,4,2], timeline Ice Age, Crusades, Cold War , Information Age
+P1 visits Warm Globe. P1 plays Artist. P2 plays Anubis. 
+P2 Visit Info Age
+P2 plays Artist
+Success: P2 has 3 cards in hand
+
+

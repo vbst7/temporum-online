@@ -1,0 +1,21 @@
+[
+  {
+    "id": "gizmo",
+    "name": "Gizmo",
+    "type": "M",
+    "coin": 0,
+    "cost": 20,
+    "score": 10,
+    "description": "Choose a Momentary card in your hand besides a Gizmo. Play it twice. Return this to the Gizmo pile."
+  },
+  {
+    "id": "trade-goods",
+    "name": "Trade Goods",
+    "type": "M",
+    "coin": 0,
+    "cost": 0,
+    "score": 2,
+    "description": "Choose one: Draw 2 cards; or gain $8; or draw a card and gain $4. Return this to the Trade Goods pile."
+  }
+]
+
