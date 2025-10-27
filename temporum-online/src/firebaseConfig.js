@@ -6,13 +6,11 @@ import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyB05tIpEG2YYZhCQWO8wNY2054xH0CRVGs",
-  authDomain: "temporum-online.firebaseapp.com",
-  projectId: "temporum-online",
-  storageBucket: "temporum-online.firebasestorage.app",
-  messagingSenderId: "132770057733",
-  appId: "1:132770057733:web:33cdbf7afc8126180ed66c"
-
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
 };
 
 
