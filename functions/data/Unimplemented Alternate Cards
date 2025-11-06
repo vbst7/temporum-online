@@ -1,15 +1,5 @@
 [
   {
-  "id": "treasure-map",
-  "name": "Treasure Map",
-  "description": "After you visit a Time IV Zone, you may discard this from play to draw 2 cards.",
-  "coin": "6",
-  "type": "P",
-  "score": "6",
-  "cost": "12"
-  }
-,
-  {
     "id": "a-place-outside-time",
     "name": "A Place Outside Time",
     "description": "This is a Zone only you can visit; it says 'Gain $8 or advance 2 of your ♛.'",
@@ -202,36 +192,40 @@
   {
     "id": "secret-mission",
     "name": "Secret Mission",
-    "description": "Draw a card. Advance one of your ♛. At the start of your turn, you may discard this, to advance to a real Time.",
+    "description": "Draw a card. Advance one of your ♛.",
+    "secret": "At the start of your turn, you may discard this, to advance to a real Time.",
     "coin": "4",
-    "type": "S",
+    "type": "M",
     "cost": "20",
     "score": "8"
   },
   {
     "id": "secret-plot",
     "name": "Secret Plot",
-    "description": "Discard a card. Score a card (paying). Play a card. At the start of your turn, you may discard this, to advance one of your ♛.",
+    "description": "Discard a card. Score a card (paying). Play a card.",
+    "secret": "At the start of your turn, you may discard this, to advance one of your ♛.",
     "coin": "0",
-    "type": "S",
+    "type": "M",
     "cost": "16",
     "score": "7"
   },
   {
     "id": "secret-stash",
     "name": "Secret Stash",
-    "description": "If you're alone, gain $1 per ♛ you have here. At the start of your turn, you may discard this, to gain $4.",
+    "description": "If you're alone, gain $1 per ♛ you have here.",
+    "secret": "At the start of your turn, you may discard this, to gain $4.",
     "coin": "10",
-    "type": "S",
+    "type": "M",
     "cost": "8",
     "score": "5"
   },
   {
     "id": "secret-weapon",
     "name": "Secret Weapon",
-    "description": "Draw a card. Play a card. At the start of your turn, you may discard this, to pick a Time and rule it this turn.",
+    "description": "Draw a card. Play a card.",
+    "secret": "At the start of your turn, you may discard this, to pick a Time and rule it this turn.",
     "coin": "0",
-    "type": "S",
+    "type": "M",
     "cost": "8",
     "score": "5"
   },
