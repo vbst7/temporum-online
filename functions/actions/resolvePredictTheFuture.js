@@ -1,7 +1,5 @@
 const {logMessage} = require("../utils/logHelpers");
 const {executeChangeHistoryHelper} = require("../utils/gameLogicHelpers");
-const {checkAnubisAndEndTurn, declareWinner} =
-  require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
 /**
@@ -41,13 +39,10 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   player.prompt = "";
   delete player.promptContext;
 
-  const result = checkAnubisAndEndTurn(lobbyId, lobbyData);
-
-  if (result && result.winnerDeclared) {
-    const winnerPayload =
-      declareWinner(lobbyId, lobbyData, result.winnerPlayer, result.reason);
-    return {...lobbyData, ...winnerPayload};
-  }
-
+  // After resolving, continue the post-visit sequence.
+  await require("../utils/turnManagementHelpers")
+      .processPostVisitQueue(lobbyId, lobbyData);
+  // If processPostVisitQueue set a new prompt or ended the turn,
+  // the game loop will pick it up.
   return lobbyData;
 };

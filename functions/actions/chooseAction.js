@@ -61,14 +61,14 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   // If the choice resulted in no new prompt (i.e., 'draw'),
   // then we can proceed with the zone follow-up.
   if (!player.prompt) { // eslint-disable-line max-len
+    // If no new prompt was set, continue with the zone follow-up.
+    // This will either set a new prompt or process the post-visit queue.
     if (action && action.type === "zone") {
-      const result = await executeZoneFollowUp(player, action.id,
-          lobbyData, lobbyId, action.instruction, {updatedHand: hand});
-
-      player.handCount = result.hand.length;
-      batch.update(privateRef, {hand: result.hand});
-      if (result.turnEnded) return {updatePayload: lobbyData, batch};
+      await executeZoneFollowUp(player, action.id, lobbyData,
+          lobbyId, action.instruction, {updatedHand: hand});
     }
+    // The game loop will handle the next step if a prompt
+    // was set or turn ended.
   }
 
   return {updatePayload: lobbyData, batch};

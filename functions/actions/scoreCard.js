@@ -50,6 +50,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
 
   player.handCount = hand.length;
 
+  // If scoreSpecificCard or scoreScrapyardCard set a new prompt
+  // or ended the turn, the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   batch.update(privateRef, {hand});
   return {updatePayload: lobbyData, batch};
 };

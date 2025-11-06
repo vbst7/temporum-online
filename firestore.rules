@@ -114,16 +114,19 @@ service cloud.firestore {
           (type == 'DECLINE_CHANGE_HISTORY' && isValidPrompt(data, actionUid, 'changeHist')) ||
           (type == 'RESOLVE_OPTIONAL_ZONE' && isValidOptionalZonePrompt(data, actionUid, payload)) ||
           (type == 'RESOLVE_TOYS_CHOICE' && isValidPrompt(data, actionUid, 'toys-choice')) ||
-          (type == 'RESOLVE_DISCARD_FOR_MONEY' && isValidPrompt(data, actionUid, 'imperial-china')) ||
-          (type == 'RESOLVE_DISCARD_FOR_MONEY' && isValidPrompt(data, actionUid, 'imperial-china')) ||
+          (type == 'RESOLVE_DISCARD_FOR_MONEY' && (isValidPrompt(data, actionUid, 'imperial-china') || isValidPrompt(data, actionUid, 'greek-america'))) ||
           (type == 'RESOLVE_INQUISITION' && isValidPrompt(data, actionUid, 'inquisition')) ||
           (type == 'RESOLVE_INVENTOR' && isValidPrompt(data, actionUid, 'inventor')) ||
           (type == 'RESOLVE_PREDICT_THE_FUTURE' && isValidPrompt(data, actionUid, 'predict-the-future')) ||
           (type == 'RESOLVE_INVESTMENTS' && isValidPrompt(data, actionUid, 'investments-choice')) ||
+          (type == 'RESOLVE_SUNBOAT' && isValidPrompt(data, actionUid, 'sunboat-choice')) ||
           (type == 'RESOLVE_SIMULATED_PARADISE_CHOICE' && isValidPrompt(data, actionUid, 'simulatedChoice')) ||
           (type == 'RESOLVE_MOVE' && isValidPrompt(data, actionUid, 'move')) ||
           (type == 'RESOLVE_SET_HQ' && isValidPrompt(data, actionUid, 'set-hq')) ||
           (type == 'RESOLVE_TREASURE_MAP' && isValidPrompt(data, actionUid, 'treasure-map-choice')) ||
+          (type == 'CHOOSE_POST_VISIT' && isValidPrompt(data, actionUid, 'post-visit-choice')) ||
+          (type == 'CHOOSE_END_OF_TURN' && isValidPrompt(data, actionUid, 'end-of-turn-choice')) ||
+          (type == 'CHOOSE_START_OF_TURN' && isValidPrompt(data, actionUid, 'start-of-turn-choice')) ||
           (type == 'RETREAT_CROWN' && isValidPrompt(data, actionUid, 'retreat')) ||
           (type == 'SELECT_CYBERNETICS_PERPETUAL' && isValidPrompt(data, actionUid, 'cybernetics-perpetual')) ||
           (type == 'SELECT_CYBERNETICS_HAND_CARD' && isValidPrompt(data, actionUid, 'cybernetics-hand')) ||

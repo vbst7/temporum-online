@@ -7,8 +7,7 @@ const {
   executeCardFollowUp,
 } = require("../utils/followUpHelpers");
 const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+  processPostVisitQueue,
 } = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -69,16 +68,13 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     // Everyone has responded. The original zone visit is now fully resolved.
     // Check if there's a zone follow-up or end the turn.
     const turnPlayer = lobbyData.players.find((p) => p.turn);
-    let turnEnded;
+    // If the resolution stack is empty, process the post-visit queue.
+    // Otherwise, continue with the resolution stack.
     if (lobbyData.resolutionStack.length === 0) {
-      const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-      if (result && result.winnerDeclared) {
-        const winnerPayload = await declareWinner(lobbyId, lobbyData,
-            result.winnerPlayer, result.reason);
-        return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-      }
-    } else {
+      await processPostVisitQueue(lobbyId, lobbyData);
+    } else { // eslint-disable-line no-unused-vars
       const action = peekStack(lobbyData);
+      let turnEnded;
       if (action && action.type === "zone") {
         turnEnded = await executeZoneFollowUp(turnPlayer, action.id, lobbyData,
             lobbyId, action.instruction);

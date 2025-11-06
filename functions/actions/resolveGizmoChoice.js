@@ -43,6 +43,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   await playSpecificCardTwice(player, hand, cardToPlay,
       lobbyData, lobbyId, gizmoCard);
 
+  // If playSpecificCardTwice set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   batch.update(privateRef, {hand});
   return {updatePayload: lobbyData, batch};
 };

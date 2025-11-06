@@ -243,6 +243,15 @@
 "cost": "8"
 },
 {
+"id": "treasure-map",
+"name": "Treasure Map",
+"description": "After you visit a Time IV Zone, you may discard this from play to draw 2 cards.",
+"coin": "6",
+"type": "P",
+"score": "6",
+"cost": "12"
+},
+{
 "id": "trinket",
 "name": "Trinket",
 "description": "Play another card.",

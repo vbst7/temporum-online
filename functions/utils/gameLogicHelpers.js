@@ -1,6 +1,7 @@
 const {logMessage} = require("./logHelpers");
 const {drawCards, discardCard, gainMoney, timesRuled, doesPlayerRuleAge,
-  moveToZone, stealMoney} = require("./resourceHelpers");
+  moveToZone, stealMoney,
+  crowdedness} = require("./resourceHelpers");
 const {setPlayerPrompt} = require("./promptingHelpers");
 // Forward declarations for functions that have circular dependencies.
 // These will be set via `initializeHelpers` in initHelpers.js.
@@ -8,13 +9,13 @@ let promptScore;
 let promptPlay;
 let promptDiscard;
 let promptVisit; // eslint-disable-line no-unused-vars
-let executeCardFollowUp;
 let executeZoneFollowUp; // eslint-disable-line no-unused-vars
-let checkAnubisAndEndTurn; // eslint-disable-line no-unused-vars
+let processPostVisitQueue; // eslint-disable-line no-unused-vars
 let declareWinner; // eslint-disable-line no-unused-vars
 let startTurn; // eslint-disable-line no-unused-vars
 let endTurn; // eslint-disable-line no-unused-vars
 let visitSpecificZone; // eslint-disable-line no-unused-vars
+let executeCardFollowUp;
 
 /**
  * A helper function to modify the arrows and recalculate real zones.
@@ -148,12 +149,20 @@ exports.removeHourglass = function(player, lobbyData) {
  * @param {string} lobbyId The ID of the lobby.
  */
 exports.playMomentary = async function(player, hand, card, lobbyData, lobbyId) {
+  const {getFirestore} = require("firebase-admin/firestore");
   switch (card.id) {
-    case "anubis-statuette":
+    case "anubis-statuette": {
       if (!lobbyData.postVisitQueue) lobbyData.postVisitQueue = [];
-      lobbyData.postVisitQueue.push({effect: "anubis",
-        cardId: "anubis-statuette", playerId: player.id});
+      const anubisCount = lobbyData.postVisitQueue.filter((i) =>
+        i.cardId === "anubis-statuette" && i.playerId === player.id).length;
+      lobbyData.postVisitQueue.push({
+        id: `anubis-${player.id}-${anubisCount}`,
+        label: "Anubis Statuette",
+        cardId: "anubis-statuette",
+        playerId: player.id,
+      });
       break;
+    }
     case "artist":
       drawCards(player, hand, 1, lobbyData, {name: card.name, type: card.type});
       break;
@@ -248,11 +257,18 @@ exports.playMomentary = async function(player, hand, card, lobbyData, lobbyId) {
     case "papal-tiara":
       await promptScore(player, hand, "", lobbyData);
       break;
-    case "predict-the-future":
+    case "predict-the-future": {
       if (!lobbyData.endOfTurnQueue) lobbyData.endOfTurnQueue = [];
-      lobbyData.endOfTurnQueue.push({cardId: "predict-the-future",
-        playerId: player.id, zoneIndex: player.zone});
+      const predictCount = lobbyData.endOfTurnQueue.filter((i) =>
+        i.cardId === "predict-the-future" && i.playerId === player.id).length;
+      lobbyData.endOfTurnQueue.push({
+        id: `predict-${player.id}-${predictCount}`,
+        label: "Predict the Future",
+        cardId: "predict-the-future",
+        playerId: player.id,
+      });
       break;
+    }
     case "settlers":
       player.crowns = 1;
       setPlayerPrompt(player, lobbyData, "advance",
@@ -262,11 +278,17 @@ exports.playMomentary = async function(player, hand, card, lobbyData, lobbyId) {
       gainMoney(player, (2 * timesRuled(player, lobbyData.players)),
           lobbyData, {name: card.name, type: card.type});
       break;
-    case "step-on-a-butterfly":
+    case "step-on-a-butterfly": {
       if (!lobbyData.endOfTurnQueue) lobbyData.endOfTurnQueue = [];
-      lobbyData.endOfTurnQueue.push({cardId: "step-on-a-butterfly",
+      const butterflyCount = lobbyData.endOfTurnQueue.filter((i) =>
+        i.cardId === "step-on-a-butterfly" && i.playerId === player.id).length;
+      lobbyData.endOfTurnQueue.push({
+        id: `butterfly-${player.id}-${butterflyCount}`,
+        label: "Step on a Butterfly",
+        cardId: "step-on-a-butterfly",
         playerId: player.id});
       break;
+    }
     case "trinket":
       await promptPlay(player, hand, lobbyData, lobbyId);
       break;
@@ -295,6 +317,35 @@ exports.playMomentary = async function(player, hand, card, lobbyData, lobbyId) {
             {crownCount: 1, source: {name: "Panacea", type: "M"}});
       }
       break;
+    case "ancient-scroll": {
+      const db = getFirestore();
+      const batch = db.batch();
+      for (const p of lobbyData.players) {
+        if (p.id === player.id) {
+          // Handle current player's draw directly with their in-memory hand
+          drawCards(p, hand, 1, lobbyData,
+              {name: card.name, type: card.type});
+        } else {
+          // For other players, fetch their hand, draw, and batch the update
+          const playerRef = db.collection("lobbies").doc(lobbyId)
+              .collection("private").doc(p.id);
+          const playerSnap = await playerRef.get();
+          const playerHand = playerSnap.exists ? playerSnap.data().hand : [];
+          drawCards(p, playerHand, 1, lobbyData,
+              {name: card.name, type: card.type});
+          p.handCount = playerHand.length;
+          batch.update(playerRef, {hand: playerHand});
+        }
+      }
+      await batch.commit();
+      break;
+    }
+    case "assassins-dagger": {
+      player.crowns = 1;
+      setPlayerPrompt(player, lobbyData, "advance",
+          {crownCount: 1, source: {name: "Assassin's Dagger", type: "M"}});
+      break;
+    }
     case "golden-apple":
       for (const otherPlayer of lobbyData.players) {
         if (otherPlayer.id !== player.id) {
@@ -316,6 +367,51 @@ exports.playMomentary = async function(player, hand, card, lobbyData, lobbyId) {
     }
     case "pilgrims": {
       await promptScore(player, hand, "pilgrims", lobbyData);
+      break;
+    }
+    case "maneuver": {
+      if (!lobbyData.postVisitQueue) lobbyData.postVisitQueue = [];
+      const maneuverCount = lobbyData.postVisitQueue.filter((i) =>
+        i.cardId === "maneuver" && i.playerId === player.id).length;
+      lobbyData.postVisitQueue.push({
+        id: `maneuver-${player.id}-${maneuverCount}`,
+        label: "Maneuver",
+        cardId: "maneuver",
+        playerId: player.id,
+      });
+      break;
+    }
+    case "secret-mission": {
+      // Draw a card. Advance one of your ♛.
+      drawCards(player, hand, 1, lobbyData,
+          {name: "Secret Mission", type: "M"});
+      player.crowns = 1;
+      setPlayerPrompt(player, lobbyData, "advance",
+          {crownCount: 1, source: {name: "Secret Mission", type: "M"}});
+      break;
+    }
+    case "secret-plot": {
+      // Discard a card. Score a card (paying). Play a card.
+      // TODO: add follow-up to resolution stack.
+      // One of a few Momentary cards with follow-up (also Visionary)
+      promptDiscard(player, lobbyData,
+          {name: card.name, type: card.type});
+      break;
+    }
+    case "secret-stash": {
+      // If you're alone, gain $1 per ♛ you have here.
+      if (crowdedness(player, lobbyData.players) === 0) {
+        const ageIndex = parseInt(lobbyData.zones[player.zone].age) - 1;
+        gainMoney(player, (player.scoreTrack[ageIndex]),
+            lobbyData, {name: "Secret Stash", type: "M"});
+      }
+      break;
+    }
+    case "secret-weapon": {
+      // Draw a card. Play a card.
+      drawCards(player, hand, 1, lobbyData,
+          {name: "Secret Weapon", type: "M"});
+      await promptPlay(player, hand, lobbyData, lobbyId);
       break;
     }
   }
@@ -341,13 +437,23 @@ exports.playPerpetual = function(player, card, lobbyData) {
       player.perpetuals.score.push(card);
       break;
     case "explorer":
+    case "detective":
+      player.perpetuals.draw.push(card);
+      break;
+    case "bank":
       player.perpetuals.draw.push(card);
       break;
     case "gang-of-pickpockets":
       player.GOP = true;
       player.perpetuals.postPlay.push(card);
       break;
+    case "revolutionaries":
+      player.newRevolutionaries = true;
+      player.perpetuals.postPlay.push(card);
+      break;
     case "investments":
+    case "hideout":
+    case "sunboat-of-ra":
       player.perpetuals.turnEnd.push(card);
       break;
     case "prime-real-estate":
@@ -360,6 +466,7 @@ exports.playPerpetual = function(player, card, lobbyData) {
       player.perpetuals.discard.push(card);
       break;
     case "treasure-map":
+    case "university":
       player.perpetuals.postVisit.push(card);
       break;
   }
@@ -471,8 +578,19 @@ exports.scoreSpecificCard =
       instruction: instruction});
     player.scoreableCards = [];
 
-    if (!lobbyData.discardPile) lobbyData.discardPile = [];
-    lobbyData.discardPile.push(player.cardBeingScored);
+    // Handle returning Gizmo/Trade Goods to their piles when scored
+    if (cardToScore.id === "gizmo") {
+      if (!lobbyData.gizmoPile) lobbyData.gizmoPile = [];
+      lobbyData.gizmoPile.push(player.cardBeingScored);
+      player.gizmoCount = (player.gizmoCount || 0) - 1;
+    } else if (cardToScore.id === "trade-goods") {
+      if (!lobbyData.tradeGoodsPile) lobbyData.tradeGoodsPile = [];
+      lobbyData.tradeGoodsPile.push(player.cardBeingScored);
+      player.tradeGoodsCount = (player.tradeGoodsCount || 0) - 1;
+    } else {
+      if (!lobbyData.discardPile) lobbyData.discardPile = [];
+      lobbyData.discardPile.push(player.cardBeingScored);
+    }
     player.cardBeingScored = null;
   };
 
@@ -521,22 +639,22 @@ exports.setPromptScore = (func) => {
   promptScore = func;
 };
 exports.setPromptPlay = (func) => {
-  promptPlay = func; // eslint-disable-line no-unused-vars
+  promptPlay = func;
 };
 exports.setPromptDiscard = (func) => {
-  promptDiscard = func; // eslint-disable-line no-unused-vars
-};
-exports.setPromptVisit = (func) => {
-  promptVisit = func;
+  promptDiscard = func;
 };
 exports.setExecuteCardFollowUp = (func) => {
   executeCardFollowUp = func;
 };
+exports.setPromptVisit = (func) => {
+  promptVisit = func;
+};
 exports.setExecuteZoneFollowUp = (func) => {
   executeZoneFollowUp = func;
 };
-exports.setCheckAnubisAndEndTurn = (func) => {
-  checkAnubisAndEndTurn = func;
+exports.setProcessPostVisitQueue = (func) => {
+  processPostVisitQueue = func;
 };
 exports.setDeclareWinner = (func) => {
   declareWinner = func;

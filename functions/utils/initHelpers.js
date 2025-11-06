@@ -16,8 +16,8 @@ function initializeHelpers() {
   gameLogicHelpers.setExecuteCardFollowUp(followUpHelpers.executeCardFollowUp);
   gameLogicHelpers.setExecuteZoneFollowUp(
       followUpHelpers.executeZoneFollowUp);
-  gameLogicHelpers.setCheckAnubisAndEndTurn( // eslint-disable-line max-len
-      turnManagementHelpers.checkAnubisAndEndTurn);
+  gameLogicHelpers.setProcessPostVisitQueue(
+      turnManagementHelpers.processPostVisitQueue);
   gameLogicHelpers.setDeclareWinner(turnManagementHelpers.declareWinner);
   gameLogicHelpers.setStartTurn(turnManagementHelpers.startTurn);
   gameLogicHelpers.setEndTurn(turnManagementHelpers.endTurn);
@@ -27,8 +27,8 @@ function initializeHelpers() {
   promptingHelpers.setExecuteCardFollowUp(followUpHelpers.executeCardFollowUp); // eslint-disable-line max-len
   promptingHelpers.setExecuteChangeHistoryHelper(
       gameLogicHelpers.executeChangeHistoryHelper);
-  promptingHelpers.setCheckAnubisAndEndTurn(
-      turnManagementHelpers.checkAnubisAndEndTurn);
+  promptingHelpers.setProcessPostVisitQueue(
+      turnManagementHelpers.processPostVisitQueue);
   promptingHelpers.setRemoveHourglass(
       gameLogicHelpers.removeHourglass);
   promptingHelpers.setPromptPlay(promptingHelpers.promptPlay);
@@ -40,9 +40,6 @@ function initializeHelpers() {
   // turnManagementHelpers needs promptingHelpers, gameLogicHelpers,
   // followUpHelpers, and self-references
   turnManagementHelpers.setPromptVisit(promptingHelpers.promptVisit);
-  turnManagementHelpers.setExecuteChangeHistoryHelper(
-      gameLogicHelpers.executeChangeHistoryHelper,
-  );
   turnManagementHelpers.setExecuteZoneFollowUp(
       followUpHelpers.executeZoneFollowUp,
   );
@@ -52,14 +49,20 @@ function initializeHelpers() {
   turnManagementHelpers.setPromptPlay(promptingHelpers.promptPlay);
   turnManagementHelpers.setPromptScore(promptingHelpers.promptScore);
   turnManagementHelpers.setDeclareWinner(turnManagementHelpers.declareWinner);
-  turnManagementHelpers.setCheckAnubisAndEndTurn(
-      turnManagementHelpers.checkAnubisAndEndTurn,
+  turnManagementHelpers.setProcessPostVisitQueue(
+      turnManagementHelpers.processPostVisitQueue,
+  );
+  turnManagementHelpers.setProcessEndOfTurnQueue(
+      turnManagementHelpers.processEndOfTurnQueue,
+  );
+  turnManagementHelpers.setProcessStartOfTurnQueue(
+      turnManagementHelpers.processStartOfTurnQueue,
   );
   turnManagementHelpers.setStartTurn(turnManagementHelpers.startTurn);
   turnManagementHelpers.setEndTurn(turnManagementHelpers.endTurn);
 
-  followUpHelpers.setCheckAnubisAndEndTurn(
-      turnManagementHelpers.checkAnubisAndEndTurn,
+  followUpHelpers.setProcessPostVisitQueue(
+      turnManagementHelpers.processPostVisitQueue,
   );
   followUpHelpers.setPromptDiscard(promptingHelpers.promptDiscard);
   followUpHelpers.setPromptScore(promptingHelpers.promptScore);

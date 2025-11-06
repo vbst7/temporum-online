@@ -43,11 +43,34 @@ exports.execute = async (lobbyId, uid, payload, lobbyData) => {
       lobbyData.alternateRealities,
   );
 
+  const batch = db.batch();
+
+  // Create private documents for each player's hand
+  players.forEach((p) => {
+    // For manual tests, the hand is already assigned.
+    // For regular games, it's assigned by initializeGame.
+    if (p.hand) {
+      // Set the public handCount before deleting the private hand data
+      p.handCount = p.hand.length;
+      const privateDataRef = db.collection("lobbies").doc(lobbyId)
+          .collection("private").doc(p.id);
+      batch.set(privateDataRef, {hand: p.hand});
+      // Remove hand from the public player object before saving
+      delete p.hand;
+    }
+  });
+
+  // Commit the batch to create private hands before starting the first turn.
+  // This ensures that when startTurn tries to read the hand, it exists.
+  await batch.commit();
+
   // --- First Turn Setup ---
+  // Create a fresh object for the first turn to avoid using stale lobbyData.
   const mutableLobbyData = {
-    ...lobbyData,
     deck,
     players,
+    allCards: lobbyData.allCards,
+    allAlternateCards: lobbyData.allAlternateCards,
     zones,
     arrows,
     realZones, // Use the initialized value
@@ -58,20 +81,7 @@ exports.execute = async (lobbyId, uid, payload, lobbyData) => {
     resolutionStack: [],
   };
 
-  const batch = db.batch();
-
-  // Create private documents for each player's hand
-  mutableLobbyData.players.forEach((p) => {
-    // Set the public handCount before deleting the private hand data
-    p.handCount = p.hand.length;
-    const privateDataRef = db.collection("lobbies").doc(lobbyId)
-        .collection("private").doc(p.id);
-    batch.set(privateDataRef, {hand: p.hand});
-    // Remove hand from the public player object before saving
-    delete p.hand;
-  });
-
-  // Mutate the temporary data for the first turn.
+  // Now, start the first turn with the fully initialized data.
   await startTurn(mutableLobbyData.players[0], mutableLobbyData, lobbyId);
 
   // --- Prepare Update Payload ---
@@ -96,6 +106,5 @@ exports.execute = async (lobbyId, uid, payload, lobbyData) => {
       selectedZones: FieldValue.delete(),
       initialCards: FieldValue.delete(),
     },
-    batch,
   };
 };

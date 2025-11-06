@@ -9,6 +9,42 @@
     "cost": "4"
   },
   {
+    "id": "assassins-dagger",
+    "name": "Assassin's Dagger",
+    "description": "Advance one of your ♛. Then gain $4 per Time you rule.",
+    "coin": "4",
+    "type": "M",
+    "cost": "12",
+    "score": "6"
+  },
+  {
+    "id": "ancient-scroll",
+    "name": "Ancient Scroll",
+    "description": "Each player draws a card.",
+    "coin": "12",
+    "type": "M",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "bank",
+    "name": "Bank",
+    "description": "The first time you gain $ each turn, gain an extra $1.",
+    "coin": "8",
+    "type": "P",
+    "cost": "16",
+    "score": "7"
+  },
+  {
+    "id": "detective",
+    "name": "Detective",
+    "description": "When you have no cards in hand and draw, draw an extra card.",
+    "coin": "8",
+    "type": "P",
+    "cost": "12",
+    "score": "6"
+  },
+  {
     "id": "golden-apple",
     "name": "Golden Apple",
     "description": "Each other player moves here (they don't visit this Zone, they just move).",
@@ -16,6 +52,24 @@
     "type": "M",
     "cost": "8",
     "score": "5"
+  },
+  {
+    "id": "revolutionaries",
+    "name": "Revolutionaries",
+    "description": "When you play another card, advance one of your ♛ from Time II (after resolving the played card).",
+    "coin": "2",
+    "type": "P",
+    "cost": "4",
+    "score": "4"
+  },
+  {
+    "id": "maneuver",
+    "name": "Maneuver",
+    "description": "After resolving this Zone, you may move to any real Zone (without visiting it).",
+    "coin": "12",
+    "type": "M",
+    "cost": "12",
+    "score": "6"
   },
   {
     "id": "pilgrims",
@@ -45,5 +99,52 @@
     "type": "M",
     "cost": "12",
     "score": "5"
+  },
+  {
+    "id": "secret-mission",
+    "name": "Secret Mission",
+    "description": "Draw a card. Advance one of your ♛.",
+    "secret": "At the start of your turn, you may discard this, to move to a real Time.",
+    "coin": "4",
+    "type": "M",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "secret-stash",
+    "name": "Secret Stash",
+    "description": "If you're alone, gain $1 per ♛ you have here.",
+    "secret": "At the start of your turn, you may discard this, to gain $4.",
+    "coin": "10",
+    "type": "M",
+    "cost": "8",
+    "score": "5"
+  },
+  {
+    "id": "hideout",
+    "name": "Hideout",
+    "description": "At the end of your turn, if you have at least $40, advance one of your ♛.",
+    "coin": "8",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
+    },
+  {
+    "id": "university",
+    "name": "University",
+    "description": "After you visit a Time II Zone, draw a card, then discard a card.",
+    "coin": "12",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
+  },
+  {
+    "id": "sunboat-of-ra",
+    "name": "Sunboat of Ra",
+    "description": "At the end of your turn, if the last turn was another player's, you may discard this to take another turn after this one.",
+    "coin": "12",
+    "type": "P",
+    "cost": "20",
+    "score": "8"
   }
 ]

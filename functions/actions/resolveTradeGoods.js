@@ -54,9 +54,10 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
 
   // The card action is complete. The follow-up function will pop the stack
   // and handle returning the card to its pile.
-  const {turnEnded} = await executeCardFollowUp(player, "trade-goods",
-      lobbyData, lobbyId, null, {updatedHand: hand});
-  if (turnEnded) return {updatePayload: lobbyData, batch};
-
+  await executeCardFollowUp(player, "trade-goods", lobbyData,
+      lobbyId, null, {updatedHand: hand});
+  // If executeCardFollowUp set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   return {updatePayload: lobbyData, batch};
 };

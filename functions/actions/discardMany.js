@@ -2,8 +2,6 @@ const {logMessage, peekStack} = require("../utils/logHelpers");
 const {discardCard, gainMoney} = require("../utils/resourceHelpers");
 const {executeZoneFollowUp, executeCardFollowUp} =
   require("../utils/followUpHelpers");
-const {checkAnubisAndEndTurn, declareWinner} =
-  require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 const {setPlayerPrompt} = require("../utils/promptingHelpers.js");
 /**
@@ -105,12 +103,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
 
   // Finish playing the card or executing the zone
   if (lobbyData.resolutionStack.length === 0) {
-    const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-    if (result && result.winnerDeclared) {
-      const winnerPayload = await declareWinner(lobbyId, lobbyData, result
-          .winnerPlayer, result.reason);
-      return {...lobbyData, ...winnerPayload};
-    }
+    // If the resolution stack is empty, process the post-visit queue.
+    await require("../utils/turnManagementHelpers")
+        .processPostVisitQueue(lobbyId, lobbyData);
+    // The game loop will handle the next step if a
+    // prompt was set or turn ended.
+    return {updatePayload: lobbyData, batch};
   } else {
     const action = peekStack(lobbyData);
     if (action && action.type === "zone") {

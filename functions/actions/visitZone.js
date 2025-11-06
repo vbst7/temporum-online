@@ -38,7 +38,10 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   if (newHand !== undefined) {
     player.handCount = newHand.length;
     batch.update(privateRef, {hand: newHand});
-  }
+  } // If newHand is undefined, it means a prompt was set,
+  // and the hand will be updated when that prompt is resolved.
+
+  // The game loop will handle the next step if a prompt was set or turn ended.
 
   return {updatePayload: lobbyData, batch};
 };

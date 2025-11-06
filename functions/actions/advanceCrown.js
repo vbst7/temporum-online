@@ -1,12 +1,11 @@
 const {logMessage, peekStack} = require("../utils/logHelpers");
-const {advanceSpecificCrown, drawCards} = require("../utils/resourceHelpers");
+const {advanceSpecificCrown, drawCards, timesRuled, gainMoney} =
+  require("../utils/resourceHelpers");
 const {
   executeCardFollowUp,
   executeZoneFollowUp,
-} = require("../utils/followUpHelpers");
-const {
-  checkAnubisAndEndTurn,
-} = require("../utils/turnManagementHelpers");
+} = require("../utils/followUpHelpers"); // eslint-disable-line no-unused-vars
+const {processStartOfTurnQueue} = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 const {promptScore, promptPlay} = require("../utils/promptingHelpers");
 
@@ -50,6 +49,7 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     player.prompt = ""; // Advancing is done
     const promptContext = player.promptContext || {};
     const source = player.promptContext?.source;
+    const origin = player.promptContext?.origin;
     const advancedCount = player.promptContext?.crownCount || 0;
 
     const messageParts = [
@@ -97,6 +97,14 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
         return {updatePayload: lobbyData, batch};
       }
     }
+    if (source && source.name === "Assassin's Dagger" && source.type === "M") {
+      const ruledCount = timesRuled(player, lobbyData.players);
+      if (ruledCount > 0) {
+        gainMoney(player, ruledCount * 4, lobbyData,
+            {name: "Assassin's Dagger", type: "M"});
+      }
+    }
+
     // --- End Post-Play Logic ---
 
     // --- Post-Score Logic ---
@@ -158,7 +166,7 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
       }
     }
     // --- End Post-Score Logic ---
-
+    // If the stack is empty, it means this was the last action.
     if (lobbyData.resolutionStack.length > 0) {
       const action = peekStack(lobbyData);
       if (action && action.type === "zone") {
@@ -172,9 +180,17 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
         if (turnEnded) return {...lobbyData};
       }
     } else {
-      // This case should be rare, but if the stack is empty, end the turn.
-      checkAnubisAndEndTurn(lobbyId, lobbyData);
-      return lobbyData;
+      // Stack is empty, proceed to post-visit queue.
+      const {processPostVisitQueue} =
+      require("../utils/turnManagementHelpers");
+      if (origin === "start-of-turn") {
+        await processStartOfTurnQueue(player, lobbyData, lobbyId);
+        return lobbyData;
+      }
+      const result = await processPostVisitQueue(lobbyId, lobbyData);
+      if (result?.winnerDeclared) {
+        return {...lobbyData};
+      }
     }
   }
 

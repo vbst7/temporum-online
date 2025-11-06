@@ -45,6 +45,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   // The hand may have been modified by follow-up actions.
   player.handCount = result.hand.length;
 
+  // If playSpecificCard set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   batch.update(privateRef, {hand: result.hand});
   return {updatePayload: lobbyData, batch};
 };

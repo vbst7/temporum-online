@@ -136,6 +136,10 @@ export async function resolveTreasureMap(lobbyId, playerId, choice) {
   await dispatchAction(lobbyId, "RESOLVE_TREASURE_MAP", { choice }, playerId);
 }
 
+export async function resolveSunboat(lobbyId, playerId, choice) {
+  await dispatchAction(lobbyId, "RESOLVE_SUNBOAT", { choice }, playerId);
+}
+
 export async function resolveTradeGoods(lobbyId, playerId, choice) {
   await dispatchAction(lobbyId, "RESOLVE_TRADE_GOODS", { choice }, playerId);
 }
@@ -167,4 +171,16 @@ export async function resolveSetHQ(lobbyId, playerId, zoneIndex) {
 
 export async function visitZone(lobbyId, playerId, zoneIndex) {
   await dispatchAction(lobbyId, "VISIT_ZONE", { zoneIndex }, playerId);
+}
+
+export async function choosePostVisit(lobbyId, playerId, choiceId) {
+  await dispatchAction(lobbyId, "CHOOSE_POST_VISIT", { choiceId }, playerId);
+}
+
+export async function chooseEndOfTurn(lobbyId, playerId, choiceId) {
+  await dispatchAction(lobbyId, "CHOOSE_END_OF_TURN", { choiceId }, playerId);
+}
+
+export async function chooseStartOfTurn(lobbyId, playerId, prompt) {
+  await dispatchAction(lobbyId, "CHOOSE_START_OF_TURN", prompt, playerId);
 }

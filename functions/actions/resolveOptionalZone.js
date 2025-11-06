@@ -1,10 +1,8 @@
-const {logMessage, peekStack} = require("../utils/logHelpers");
+const {logMessage} = require("../utils/logHelpers");
 const {gainMoney, drawCards, discardCard,
   retreatSpecificCrown} = require("../utils/resourceHelpers");
 const {promptScore, setPlayerPrompt} = require("../utils/promptingHelpers");
-const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+const {processPostVisitQueue,
 } = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -217,18 +215,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     return {updatePayload: lobbyData, batch};
   }
 
+  // Clear the prompt
   player.prompt = "";
-  const action = peekStack(lobbyData);
-  if (action && action.type === "zone") {
-    lobbyData.resolutionStack.pop();
-  }
+  // The zone action is now fully resolved.
+  lobbyData.resolutionStack.pop();
 
-  const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result && result.winnerDeclared) {
-    const winnerPayload = await declareWinner(lobbyId, lobbyData,
-        result.winnerPlayer, result.reason);
-    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-  }
-
+  // After resolving the optional zone, re-process the post-visit queue.
+  await processPostVisitQueue(lobbyId, lobbyData);
   return {updatePayload: lobbyData, batch};
 };

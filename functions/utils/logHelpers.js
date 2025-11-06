@@ -13,8 +13,8 @@ exports.logMessage = function(lobbyData, message, type = "normal") {
     lobbyData.log.push({parts: message, type});
   }
   // For debugging resolution stack:
-  //  lobbyData.log.push({ text: `Stack:
-  //  ${JSON.stringify(lobbyData.resolutionStack)}`, type: 'debug' });
+  // lobbyData.log.push({text: `Stack:
+  //  ${JSON.stringify(lobbyData.resolutionStack)}`, type: "debug"});
 };
 
 /**

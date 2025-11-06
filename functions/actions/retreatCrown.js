@@ -4,8 +4,7 @@ const {
   executeCardFollowUp,
 } = require("../utils/followUpHelpers");
 const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+  processPostVisitQueue,
 } = require("../utils/turnManagementHelpers");
 
 /**
@@ -73,15 +72,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     } else if (action && action.type === "card") {
       const turnEnded = await executeCardFollowUp(turnPlayer, action.id,
           lobbyData, lobbyId, action.instruction);
-      if (turnEnded) return lobbyData;
-    } else {
-      const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-      if (result && result.winnerDeclared) {
-        const winnerPayload = await declareWinner(lobbyId, lobbyData,
-            result.winnerPlayer, result.reason);
-        return {...lobbyData, ...winnerPayload};
-      }
-      return lobbyData;
+      if (turnEnded) return {updatePayload: lobbyData};
+    } else { // Stack is empty, process post-visit queue
+      await processPostVisitQueue(lobbyId, lobbyData);
+      // The game loop will handle the next step if a
+      // prompt was set or turn ended.
+      return {updatePayload: lobbyData};
     }
   }
 

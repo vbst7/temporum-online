@@ -2,8 +2,8 @@ const {getFirestore} = require("firebase-admin/firestore");
 const {logMessage, peekStack} = require("../utils/logHelpers");
 const {moveToZone} = require("../utils/resourceHelpers");
 const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+  processPostVisitQueue,
+  processStartOfTurnQueue,
 } = require("../utils/turnManagementHelpers");
 
 exports.execute = async (lobbyId, uid, payload, lobbyData) => {
@@ -27,17 +27,11 @@ exports.execute = async (lobbyId, uid, payload, lobbyData) => {
   }
 
   const sourceAction = peekStack(lobbyData);
-  let source = {name: "Maneuver", type: "M"};
+  let source = player.promptContext?.source || null;
+  const origin = player.promptContext?.origin || null;
 
   if (sourceAction?.type === "zone" && sourceAction?.id === "atomic-age") {
     source = {name: "Atomic Age", type: "brown"};
-  } else {
-    // Check for end-of-turn effects like Maneuver
-    const maneuverEffect = lobbyData.endOfTurnQueue?.find((effect) => effect
-        .cardId === "maneuver");
-    if (maneuverEffect) {
-      source = {name: "Maneuver", type: "M"};
-    }
   }
 
   // Move the player without visiting
@@ -54,11 +48,12 @@ exports.execute = async (lobbyId, uid, payload, lobbyData) => {
     lobbyData.resolutionStack.pop();
   }
 
-  const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result?.winnerDeclared) {
-    const winnerPayload = await declareWinner(lobbyId, lobbyData,
-        result.winnerPlayer, result.reason);
-    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
+  // If the move originated from a start-of-turn effect, re-process that queue.
+  if (origin === "start-of-turn") {
+    await processStartOfTurnQueue(player, lobbyData, lobbyId);
+  } else {
+    // Otherwise, proceed to the normal post-visit queue.
+    await processPostVisitQueue(lobbyId, lobbyData);
   }
 
   return {updatePayload: lobbyData, batch};

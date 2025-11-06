@@ -282,7 +282,7 @@ export async function runAIAction(aiPlayer, gameData) {
       }
       break;
     case 'singularity-choice':
-    case 'scientist-enclave-choice':
+    case 'scientist-enclave':
       {
         const choice = Math.random() > 0.5;
         console.log(`AI ACTION: optional zone '${aiPlayer.prompt}' - choosing ${choice}`);

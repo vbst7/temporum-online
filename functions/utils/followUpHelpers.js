@@ -13,7 +13,7 @@ const {visitChoiceZone, visitAgeI, visitAgeII,
 // These will be set via `initializeHelpers` in initHelpers.js.
 let executeCardFollowUp;
 let executeZoneFollowUp;
-let checkAnubisAndEndTurn;
+let processPostVisitQueue;
 let promptDiscard; // eslint-disable-line no-unused-vars
 let promptScore;
 let promptPlay;
@@ -91,6 +91,22 @@ const _executeCardFollowUp = async function(player, cardId, lobbyData, lobbyId,
           .filter((c) => c.id === "gang-of-pickpockets").length;
       drawCards(player, hand, GoPCount - newGoP, lobbyData,
           {name: "Gang of Pickpockets", type: "P"});
+    }
+
+    // Advance a crown per Revolutionaries in play,
+    // minus one if it was just played
+    let newRevs = 0;
+    if (player.newRevolutionaries === true) {
+      player.newRevolutionaries = false;
+      newRevs = 1;
+    }
+    if (player.perpetuals && player.perpetuals.postPlay) {
+      const revsCount = player.perpetuals.postPlay
+          .filter((c) => c.id === "revolutionaries").length;
+      if (player.scoreTrack[1] > 0 && (revsCount - newRevs) > 0) {
+        advanceSpecificCrown(player, 1, lobbyData,
+            {name: "Revolutionaries", type: "P"});
+      }
     }
 
     let shouldDiscard = cardInPlay.type === "M";
@@ -174,11 +190,9 @@ const _executeCardFollowUp = async function(player, cardId, lobbyData, lobbyId,
     return executeCardFollowUp(player, underlyingAction.id, lobbyData,
         lobbyId, underlyingAction.instruction, {updatedHand: hand});
   }
-  // eslint-disable-next-line no-unused-vars
-  const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result?.winnerDeclared) {
-    return {turnEnded: true, hand: hand};
-  }
+  // After all card follow-ups, re-process the post-visit queue.
+  await processPostVisitQueue(lobbyId, lobbyData);
+  // The game loop will handle the next step if a prompt was set or turn ended.
   return {turnEnded: false, hand: hand};
 };
 
@@ -322,7 +336,6 @@ const _executeZoneFollowUp = async function(player,
               instruction: playersToPrompt[i],
             });
           }
-          console.log(`Stack: ${JSON.stringify(lobbyData.resolutionStack)}`);
           // prompt the first player
           const playerToPrompt =
             lobbyData.players[parseInt(playersToPrompt[0])];
@@ -657,6 +670,7 @@ const _executeZoneFollowUp = async function(player,
       const zoneIndex = lobbyData.realZones[infoZone];
       // if player has already visited that zone
       if (player.visitedZones.includes(zoneIndex)) break;
+
       visitSpecificZone(player, hand, zoneIndex, lobbyData, lobbyId);
       break;
     }
@@ -666,8 +680,7 @@ const _executeZoneFollowUp = async function(player,
         // The sequence is over, so we pop the original zone visit from the
         // stack and proceed to end the turn.
         lobbyData.resolutionStack.pop();
-        const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-        return {turnEnded: result.turnEnded, hand: hand};
+        break;
       }
       lobbyData.resolutionStack.pop();
       const playerToPrompt = lobbyData.players[parseInt(specialInstruction)];
@@ -782,13 +795,39 @@ const _executeZoneFollowUp = async function(player,
   player.handCount = hand.length;
   await privateRef.update({hand});
 
+  // Add Treasure Map and University to post-visit queue if applicable
   const zoneAge = parseInt(zone.age);
   if (zoneAge === 4) {
-    const treasureMap = player.perpetuals?.postVisit?.find((c) =>
-      c.id === "treasure-map");
-    if (treasureMap) {
-      const promptContext = {id: treasureMap.id};
-      setPlayerPrompt(player, lobbyData, "treasure-map-choice", promptContext);
+    const tmapCount = player.perpetuals?.postVisit?.filter((c) =>
+      c.id === "treasure-map").length || 0;
+    if (tmapCount > 0) {
+      if (!lobbyData.postVisitQueue) lobbyData.postVisitQueue = [];
+      for (let i = 0; i < tmapCount; i++) {
+        const tmapQueueCount = lobbyData.postVisitQueue.filter((item) =>
+          item.cardId === "treasure-map" && item.playerId === player.id).length;
+        lobbyData.postVisitQueue.push({
+          id: `tmap-${player.id}-${tmapQueueCount}`,
+          label: "Treasure Map",
+          cardId: "treasure-map",
+          playerId: player.id,
+        });
+      }
+    }
+  } else if (zoneAge === 2) {
+    const uniCount = player.perpetuals?.postVisit?.filter((c) =>
+      c.id === "university").length || 0;
+    if (uniCount > 0) {
+      if (!lobbyData.postVisitQueue) lobbyData.postVisitQueue = [];
+      for (let i = 0; i < uniCount; i++) {
+        const uniQueueCount = lobbyData.postVisitQueue.filter((item) =>
+          item.cardId === "university" && item.playerId === player.id).length;
+        lobbyData.postVisitQueue.push({
+          id: `university-${player.id}-${uniQueueCount}`,
+          label: "University",
+          cardId: "university",
+          playerId: player.id,
+        });
+      }
     }
   }
 
@@ -805,13 +844,15 @@ const _executeZoneFollowUp = async function(player,
     }
 
     lobbyData.resolutionStack.pop();
+    const underlyingAction = peekStack(lobbyData);
+
+    await processPostVisitQueue(lobbyId, lobbyData);
+
     // if this zone visit was the primary action of the turn
     if (lobbyData.resolutionStack.length === 0) {
-      const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-      return {turnEnded: !!result, hand: hand};
+      // All actions are done, let the calling function know.
     }
     // if this zone visit was part of another zone visit
-    const underlyingAction = peekStack(lobbyData);
     if (underlyingAction?.type === "zone") {
       const result = await executeZoneFollowUp(player,
           underlyingAction.id, lobbyData, lobbyId,
@@ -834,8 +875,8 @@ exports.setExecuteCardFollowUp = (func) => {
 exports.setExecuteZoneFollowUp = (func) => {
   executeZoneFollowUp = func;
 };
-exports.setCheckAnubisAndEndTurn = (func) => {
-  checkAnubisAndEndTurn = func;
+exports.setProcessPostVisitQueue = (func) => {
+  processPostVisitQueue = func;
 };
 exports.setPromptDiscard = (func) => {
   promptDiscard = func;

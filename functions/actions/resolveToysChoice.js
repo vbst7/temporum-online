@@ -1,7 +1,7 @@
 const {logMessage} = require("../utils/logHelpers");
 const {discardCard} = require("../utils/resourceHelpers");
 const {playSpecificCard} = require("../utils/gameLogicHelpers");
-const {checkAnubisAndEndTurn, declareWinner} =
+const {declareWinner} =
   require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -42,7 +42,8 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
         "Age of Toys choice made with less than 2 cards in hand.", "error");
     player.prompt = ""; // clear prompt to avoid getting stuck
     // End turn if something went wrong
-    const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
+    const {processPostVisitQueue} = require("../utils/turnManagementHelpers");
+    const result = await processPostVisitQueue(lobbyId, lobbyData);
     if (result && result.winnerDeclared) {
       const winnerPayload = await declareWinner(lobbyId, lobbyData,
           result.winnerPlayer, result.reason);
@@ -85,6 +86,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   // playSpecificCard handles its own follow-up logic
   await playSpecificCard(player, hand, cardToPlay, lobbyData, lobbyId);
 
+  // If playSpecificCard set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   player.handCount = hand.length;
   batch.update(privateRef, {hand});
   return {updatePayload: lobbyData, batch};

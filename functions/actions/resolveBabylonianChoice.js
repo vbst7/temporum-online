@@ -1,9 +1,7 @@
 const {logMessage} = require("../utils/logHelpers");
 const {gainMoney, drawCards} = require("../utils/resourceHelpers");
 const {setPlayerPrompt} = require("../utils/promptingHelpers");
-const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+const {processPostVisitQueue,
 } = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -60,12 +58,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     return {updatePayload: lobbyData, batch};
   }
 
-  const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result && result.winnerDeclared) {
-    const winnerPayload = await declareWinner(lobbyId, lobbyData,
-        result.winnerPlayer, result.reason);
-    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-  }
-
+  // After resolving the choice, re-process the post-visit queue.
+  await processPostVisitQueue(lobbyId, lobbyData);
+  // If processPostVisitQueue set a new prompt or ended the turn,
+  // the game loop will pick it up.
   return {updatePayload: lobbyData, batch};
 };

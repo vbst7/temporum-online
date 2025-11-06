@@ -52,6 +52,14 @@
       "color": "green"
     },
     {
+      "id": "dark-ages",
+      "name": "Dark Ages",
+      "description": "Draw 3 cards.",
+      "box": "When you start a turn here, discard a card.",
+      "age": "2",
+      "color": "green"
+    },
+    {
       "id": "mongolian-empire",
       "name": "Mongolian Empire",
       "description": "Draw 2 cards. If you rule here, other players with as many or more cards in hand than you discard a card.",
@@ -182,6 +190,13 @@
       "name": "Endless City",
       "description": "Gain $8. Take a Trade Goods card.",
       "box": "When this Zone becomes real, each player draws a card.",
+      "age": "4",
+      "color": "silver"
+    },
+    {
+      "id": "poison-earth",
+      "name": "Poison Earth",
+      "description": "Gain $8 and draw 2 cards. Take a Poison token.",
       "age": "4",
       "color": "silver"
     },

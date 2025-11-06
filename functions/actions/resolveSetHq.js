@@ -1,9 +1,5 @@
 const {getFirestore} = require("firebase-admin/firestore");
 const {logMessage} = require("../utils/logHelpers");
-const {
-  checkAnubisAndEndTurn,
-  declareWinner,
-} = require("../utils/turnManagementHelpers");
 
 /**
  * Handles the 'resolveSetHq' action for Age of Atlantis.
@@ -58,12 +54,10 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   // The zone action is now fully resolved.
   lobbyData.resolutionStack.pop();
 
-  const result = checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result?.winnerDeclared) {
-    const winnerPayload = declareWinner(lobbyId, lobbyData,
-        result.winnerPlayer, result.reason);
-    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-  }
-
+  // After setting HQ, re-process the post-visit queue.
+  await require("../utils/turnManagementHelpers")
+      .processPostVisitQueue(lobbyId, lobbyData);
+  // If processPostVisitQueue set a new prompt or ended the turn,
+  // the game loop will pick it up.
   return {updatePayload: lobbyData, batch};
 };

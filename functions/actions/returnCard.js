@@ -36,6 +36,13 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
 
   // Remove card from hand and place it on top of the deck
   hand.splice(cardIndex, 1);
+
+  if (cardToReturn.id === "gizmo") {
+    player.gizmoCount = (player.gizmoCount || 0) - 1;
+  } else if (cardToReturn.id === "trade-goods") {
+    player.tradeGoodsCount = (player.tradeGoodsCount || 0) - 1;
+  }
+
   lobbyData.deck.unshift(cardToReturn);
   lobbyData.topCard = cardToReturn; // Set for UI display
 
@@ -53,6 +60,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   const action = peekStack(lobbyData);
   await executeZoneFollowUp(player, action.id,
       lobbyData, lobbyId, action.instruction, {updatedHand: hand});
+  // If executeZoneFollowUp set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
 
   return {updatePayload: lobbyData, batch};
 };

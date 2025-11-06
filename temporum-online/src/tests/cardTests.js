@@ -106,6 +106,7 @@ export const cardTests = [
         { type: "visitZone", zoneIndex: 4 },
         { type: "playCard", cardIndex: 0 }, // Play Gizmo
         { type: "resolveGizmoChoice", cardIndex: 0 }, // Choose Anubis
+        { type: "post-visit-choice", choiceId: "anubis-ai_1-0" },
         { type: "visitZone", zoneIndex: 1 }, // Anubis visit 1
         { type: "visitZone", zoneIndex: 1 }, // Anubis visit 2
       ]},
@@ -1696,4 +1697,54 @@ export const perpetualTests = [
       },
     },
   },
+  {
+    testName: "Maneuver + Treasure Map",
+    testId: "Maneuver_TreasureMap",
+    aiPlayerCount: 1,
+    testConfig: {
+      selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Cold War", "Prohibition Era", "Age of Cats", "Communist Utopia", "Floating Cities", "Robot Uprising"],
+      initialHands: { "ai_1": [{ id: "maneuver", name: "Maneuver" }] },
+      initialCoins: { "ai_1": 0 },
+      initialScoreTrack: { "ai_1": [0, 0, 0, 10] },
+      initialPerpetuals: { "ai_1": { postVisit: [{ id: "treasure-map", name: "Treasure Map" }] } },
+      aiScripts: { "ai_1": [
+        { type: "visitZone", zoneIndex: 7 }, // Visit Communist Utopia
+        { type: "playCard", cardIndex: 0 },   // Play Maneuver
+        { type: "post-visit-choice", choiceId: "maneuver-ai_1-0" }, // Choose Maneuver first
+        { type: "move", zoneIndex: 0 },   // Move to Ancient Egypt
+        { type: "resolveTreasureMap", choice: true }, // Resolve Treasure Map
+      ]},
+      endCondition: {
+        type: "AND",
+        conditions: [
+          { type: "playerCoins", playerId: "ai_1", operator: "===", value: 12 }, // 8 from Maneuver + 4 from TMap
+          { type: "playerHandCount", playerId: "ai_1", operator: "===", value: 2 }, // 2 from TMap
+          { type: "playerPerpetualsContain", playerId: "ai_1", cardId: "treasure-map", exists: false }, // TMap is gone
+          { type: "playerZone", playerId: "ai_1", operator: "===", value: 0 }, // Moved to Ancient Egypt
+        ]
+      },
+    },
+  },
+  {
+    testName: "Perpetual - University: P1 visits Info Age, discards, scores",
+    testId: "Perpetual_University_InfoAge",
+    aiPlayerCount: 1,
+    testConfig: {
+      selectedZones: ["Ancient Egypt", "Crusades", "Bright Ages", "Age of Discovery", "Cold War", "Prohibition Era", "Age of Cats", "Information Age", "Floating Cities", "Robot Uprising"],
+      initialHands: { "ai_1": [{ id: "artist", name: "Artist" }, { id: "trinket", name: "Trinket" }, { id: "conspiracy", name: "Conspiracy" }] },
+      initialCoins: { "ai_1": 4 },
+      initialScoreTrack: { "ai_1": [4, 4, 0, 2] },
+      initialPerpetuals: { "ai_1": { postVisit: [{ id: "university", name: "University" }] } },
+      aiScripts: { "ai_1": [
+        { type: "visitZone", zoneIndex: 7 }, // Visit Info Age
+        { type: "visitZone", zoneIndex: 1 }, // Visit Crusades (from Info Age)
+        { type: "discardAndContinue", cardIndex: 2 }, // Discard Conspiracy for University
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist
+        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+      ]},
+      endCondition: {
+        type: "discardPileContains", cardId: "conspiracy"
+      },
+    },
+  }
 ]

@@ -49,6 +49,13 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   } else {
     const cardToPass = hand.splice(cardIndex, 1)[0];
     player.handCount = hand.length;
+
+    if (cardToPass.id === "gizmo") {
+      player.gizmoCount = (player.gizmoCount || 0) - 1;
+    } else if (cardToPass.id === "trade-goods") {
+      player.tradeGoodsCount = (player.tradeGoodsCount || 0) - 1;
+    }
+
     logMessage(lobbyData, `${player.name} chose a card to pass.`);
 
     const cultPlayerIndices = lobbyData.cultPlayerIndices;
@@ -86,6 +93,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
         if (receivingPlayer.id === playerId) {
           // If the receiving player is the current player,
           // add to their local hand.
+          if (cardToGive.id === "gizmo") {
+            receivingPlayer.gizmoCount = (receivingPlayer.gizmoCount || 0) + 1;
+          } else if (cardToGive.id === "trade-goods") {
+            receivingPlayer.tradeGoodsCount =
+            (receivingPlayer.tradeGoodsCount || 0) + 1;
+          }
           hand.push(cardToGive);
           receivingPlayer.handCount = hand.length;
         } else {
@@ -100,6 +113,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
           receivingPlayer.handCount = receivingPlayerHand.length;
           batch.update(receivingPlayerRef, {hand: receivingPlayerHand});
         }
+        if (cardToGive.id === "gizmo") {
+          receivingPlayer.gizmoCount = (receivingPlayer.gizmoCount || 0) + 1;
+        } else if (cardToGive.id === "trade-goods") {
+          receivingPlayer.tradeGoodsCount =
+          (receivingPlayer.tradeGoodsCount || 0) + 1;
+        }
         logMessage(lobbyData, `${receivingPlayer.name} received a card.`);
       }
     }
@@ -107,9 +126,12 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     lobbyData.passedCards = FieldValue.delete();
     lobbyData.cultPlayerIndices = FieldValue.delete();
     const turnPlayer = lobbyData.players.find((p) => p.turn);
+    // After all players have passed cards, continue with the zone follow-up.
     const action = peekStack(lobbyData);
-    await executeZoneFollowUp(turnPlayer, action.id, lobbyData, lobbyId,
-        action.instruction);
+    await executeZoneFollowUp(turnPlayer, action.id, lobbyData,
+        lobbyId, action.instruction);
+    // The game loop will handle the next step if a
+    // prompt was set or turn ended.
   }
 
   batch.update(privateRef, {hand});

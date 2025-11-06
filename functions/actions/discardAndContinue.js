@@ -5,8 +5,8 @@ const {
   executeCardFollowUp,
 } = require("../utils/followUpHelpers");
 const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+  processPostVisitQueue,
+  processStartOfTurnQueue,
 } = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -36,6 +36,7 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   const hand = privateSnap.exists ? privateSnap.data().hand : [];
   lobbyData.lastAction = {type: player.prompt, uid: playerId};
   const source = player.promptContext?.source;
+  const origin = source?.origin;
   // Discard the card
   discardCard(player, hand, cardIndex, lobbyData, source);
   player.handCount = hand.length;
@@ -52,37 +53,28 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   if (!anyPlayerHasPrompt) {
     // All discard actions are complete. The original turn can now proceed.
     const turnPlayer = lobbyData.players.find((p) => p.turn);
-    if (lobbyData.resolutionStack.length > 0) {
+    // If the resolution stack is empty, process the post-visit queue.
+    // Otherwise, continue with the resolution stack.
+    if (lobbyData.resolutionStack.length === 0) {
+      if (origin === "start-of-turn") {
+        await processStartOfTurnQueue(player, lobbyData, lobbyId);
+      } else {
+        await processPostVisitQueue(lobbyId, lobbyData);
+      }
+    } else {
+      // The resolution stack is not empty, so we continue with the follow-up.
       const underlyingAction = peekStack(lobbyData);
-      // We need the turn player's hand for the follow-up.
-      const turnPlayerPrivateRef = db.collection("lobbies").doc(lobbyId)
-          .collection("private").doc(turnPlayer.id);
-      const turnPlayerPrivateSnap = await turnPlayerPrivateRef.get();
-      const turnPlayerHand = turnPlayerPrivateSnap.exists ?
-        turnPlayerPrivateSnap.data().hand : [];
-
       if (underlyingAction && underlyingAction.type === "zone") {
         const turnEnded = await executeZoneFollowUp(turnPlayer,
             underlyingAction.id, lobbyData, lobbyId,
-            underlyingAction.instruction,
-            {updatedHand: turnPlayerHand});
+            underlyingAction.instruction);
         if (turnEnded) return {updatePayload: lobbyData, batch};
       } else if (underlyingAction && underlyingAction.type === "card") {
         const turnEnded = await executeCardFollowUp(turnPlayer,
             underlyingAction.id, lobbyData, lobbyId,
-            underlyingAction.instruction,
-            {updatedHand: turnPlayerHand});
+            underlyingAction.instruction);
         if (turnEnded) return {updatePayload: lobbyData, batch};
       }
-    } else {
-      // The stack is empty, so the turn is over.
-      const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-      if (result?.winnerDeclared) {
-        const winnerPayload = await declareWinner(lobbyId, lobbyData,
-            result.winnerPlayer, result.reason);
-        return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-      }
-      return {updatePayload: lobbyData, batch};
     }
   }
   // If we're here, either there are still players discarding,

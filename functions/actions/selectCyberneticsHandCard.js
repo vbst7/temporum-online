@@ -90,5 +90,8 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   // including follow-ups.
   await playSpecificCard(player, hand, newCard, lobbyData, lobbyId);
 
+  // If playSpecificCard set a new prompt or ended the turn,
+  // the game loop will pick it up.
+  // In either case, we return the current lobbyData.
   return {updatePayload: lobbyData, batch};
 };

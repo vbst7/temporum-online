@@ -8,15 +8,15 @@ const {getFirestore} = require("firebase-admin/firestore");
 // Forward declarations for functions that have circular dependencies.
 // These will be set via `initializeHelpers` in initHelpers.js.
 let executeZoneFollowUp;
-let executeCardFollowUp;
+let executeCardFollowUp; // eslint-disable-line no-unused-vars
+let executeChangeHistoryHelper; // eslint-disable-line no-unused-vars
+let processPostVisitQueue; // eslint-disable-line no-unused-vars
 let promptPlay;
 let promptDiscard;
 let promptScore; // Self-reference for internal calls within this module
 let promptVisit; // Self-reference for internal calls within this module
-let executeChangeHistoryHelper; // eslint-disable-line no-unused-vars
-let removeHourglass;
-let checkAnubisAndEndTurn; // eslint-disable-line no-unused-vars
 let visitSpecificZone; // eslint-disable-line no-unused-vars
+let removeHourglass;
 
 /**
  * Sets a prompt for a player, updating all necessary state fields.
@@ -114,26 +114,21 @@ exports.promptScore = async function(player, hand, instruction, lobbyData) {
       {type: "player", value: player.name, color: player.color},
       {type: "text", value: " has no cards they can afford to score."},
     ]);
-    player.prompt = "";
-    const underlyingAction = peekStack(lobbyData);
-    if (underlyingAction && underlyingAction.type === "zone") {
-      const turnEnded = await executeZoneFollowUp(player,
-          underlyingAction.id, lobbyData, lobbyData.lobbyId,
-          underlyingAction.instruction);
-      if (turnEnded) return currentHand;
-    } else if (underlyingAction && underlyingAction.type === "card" &&
-      underlyingAction.source?.type !== "score") {
-      const turnEnded = await executeCardFollowUp(player,
-          underlyingAction.id, lobbyData, lobbyData.lobbyId,
-          underlyingAction.instruction);
-      if (turnEnded) return currentHand;
-    }
-  }
+    // Clear prompt and active prompt entry
+    setPlayerPrompt(player, lobbyData, "", {});
+    delete lobbyData.activePrompts[player.id];
 
-  switch (instruction) {
-    default:
-      setPlayerPrompt(player, lobbyData, "score",
-          {costReduction, bonusCrown, instruction});
+    // If no scoreable cards, and no new prompt was set,
+    // continue with the resolution stack.
+    // This will either set a new prompt or process the post-visit queue.
+    if (lobbyData.resolutionStack.length > 0) {
+      const underlyingAction = peekStack(lobbyData);
+      await executeZoneFollowUp(player, underlyingAction.id,
+          lobbyData, lobbyData.lobbyId, underlyingAction.instruction);
+    }
+  } else {
+    setPlayerPrompt(player, lobbyData, "score",
+        {costReduction, bonusCrown, instruction});
   }
   return currentHand;
 };
@@ -163,17 +158,13 @@ exports.promptPlay = async function(player, hand, lobbyData, lobbyId) {
     setPlayerPrompt(player, lobbyData, "play");
   } else {
     player.prompt = "";
-    const underlyingAction = peekStack(lobbyData);
-    if (underlyingAction && underlyingAction.type === "zone") {
-      const turnEnded = await executeZoneFollowUp(player,
-          underlyingAction.id, lobbyData, lobbyId,
-          underlyingAction.instruction);
-      if (turnEnded) return currentHand;
-    } else if (underlyingAction && underlyingAction.type === "card") {
-      const turnEnded = await executeCardFollowUp(player,
-          underlyingAction.id, lobbyData, lobbyId,
-          underlyingAction.instruction);
-      if (turnEnded) return currentHand;
+    // If no cards to play, and no new prompt was set,
+    // continue with the resolution stack.
+    // This will either set a new prompt or process the post-visit queue.
+    if (lobbyData.resolutionStack.length > 0) {
+      const underlyingAction = peekStack(lobbyData);
+      await executeZoneFollowUp(player, underlyingAction.id,
+          lobbyData, lobbyId, underlyingAction.instruction);
     }
   }
   return currentHand;
@@ -264,7 +255,7 @@ async function visitAgeII(player, hand, zone, lobbyData) {
   if (zone.id === "scientist-enclave" && player.scoreTrack[ageIndex] > 0) {
   // You may retreat a ♛ of yours from here. If you do,
   // take a Gizmo card. Otherwise, draw 2 cards.
-    setPlayerPrompt(player, lobbyData, "scientist-enclave-choice");
+    setPlayerPrompt(player, lobbyData, "scientist-enclave");
     return hand;
   }
 
@@ -428,6 +419,8 @@ async function visitAgeII(player, hand, zone, lobbyData) {
     case "greek-america": {
       // Draw 2 cards. If you rule here, you may put a Base here. Either
       // way, if you have a Base here, you may discard a card to gain $6.
+      const hasBase = player.bases?.includes(player.zone);
+      if (hasBase) break;
       if (doesPlayerRuleAge(player, ageIndex, lobbyData.players)) {
         setPlayerPrompt(player, lobbyData, "greek-america-base-choice");
       }
@@ -683,6 +676,17 @@ async function visitAgeIV(player, hand, zone, lobbyData, lobbyId) {
       // "Score a card, paying by discarding a card per
       // $4 cost, rather than paying $."
       await promptScore(player, hand, "scrapyard-world", lobbyData);
+      break;
+    }
+    case "poison-earth": {
+      // "Gain $8 and draw 2 cards. Take a Poison token."
+      gainMoney(player, 8, lobbyData, {name: "Poison Earth",
+        type: "silver"});
+      drawCards(player, hand, 2, lobbyData, {name: "Poison Earth",
+        type: "silver"});
+      if (!player.poison) player.poison = [];
+      player.poison.push({turn: lobbyData.turn, value: 1});
+      break;
     }
   }
   return hand;
@@ -763,19 +767,20 @@ exports.visitSpecificZone =
       }
     }
 
+    // Special case for Information Age: it just populates the
+    // stack and then we let the game loop handle it.
+    if (zone.id === "information-age") {
+      return hand;
+    }
+
     const anyPlayerHasPrompt = lobbyData.players.some((p) => p.prompt);
     if (!anyPlayerHasPrompt) {
-      const action = peekStack(lobbyData);
-      if (action?.type === "zone") {
-        const result = await executeZoneFollowUp(player, action.id,
-            lobbyData, lobbyId, action.instruction, {updatedHand: hand});
-        hand = result.hand; // Capture the updated hand
-        if (result.turnEnded) return hand;
-      } else if (action?.type === "card") {
-        const result = await executeCardFollowUp(player, action.id,
-            lobbyData, lobbyId, action.instruction, {updatedHand: hand});
-        hand = result.hand; // Capture the updated hand
-        if (result.turnEnded) return hand;
+      // If no new prompt was set, continue with the resolution stack.
+      // This will either set a new prompt or process the post-visit queue.
+      if (lobbyData.resolutionStack.length > 0) {
+        const action = peekStack(lobbyData);
+        await executeZoneFollowUp(player, action.id, lobbyData,
+            lobbyId, action.instruction, {updatedHand: hand});
       }
     }
 
@@ -795,6 +800,12 @@ exports.setExecuteZoneFollowUp = (func) => {
 exports.setExecuteCardFollowUp = (func) => {
   executeCardFollowUp = func;
 };
+exports.setExecuteChangeHistoryHelper = (func) => {
+  executeChangeHistoryHelper = func;
+};
+exports.setProcessPostVisitQueue = (func) => {
+  processPostVisitQueue = func;
+};
 exports.setPromptPlay = (func) => {
   promptPlay = func;
 };
@@ -808,17 +819,11 @@ exports.setPlayerPrompt = setPlayerPrompt; // Export the new function
 exports.setPromptVisit = (func) => {
   promptVisit = func;
 };
-exports.setExecuteChangeHistoryHelper = (func) => {
-  executeChangeHistoryHelper = func;
+exports.setVisitSpecificZone = (func) => {
+  visitSpecificZone = func;
 };
 exports.setRemoveHourglass = (func) => {
   removeHourglass = func;
-};
-exports.setCheckAnubisAndEndTurn = (func) => {
-  checkAnubisAndEndTurn = func;
-};
-exports.setVisitSpecificZone = (func) => {
-  visitSpecificZone = func;
 };
 exports.visitChoiceZone = visitChoiceZone;
 exports.visitAgeI = visitAgeI;

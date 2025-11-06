@@ -47,6 +47,7 @@ export {
   selectCyberneticsHandCard,
   resolveInvestments,
   resolveTreasureMap,
+  resolveSunboat,
   resolveTradeGoods,
   resolveToysChoice,
   selectCardToPass,
@@ -55,5 +56,8 @@ export {
   resolveMove,
   resolveSetHQ,
   resolveY2KDiscard,
+  choosePostVisit,
+  chooseEndOfTurn,
+  chooseStartOfTurn,
 } from "./prompt.js";
 export { runAIAction, clearAIPromptMemory } from "./aiService.js";

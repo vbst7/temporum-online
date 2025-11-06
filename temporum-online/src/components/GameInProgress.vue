@@ -24,6 +24,7 @@ import {
   resolveGizmoChoice,
   resignGame,
   replacePlayerWithAI,
+  resolveSunboat,
   resolvePredictTheFuture,
   selectCyberneticsPerpetual,
   selectCyberneticsHandCard,
@@ -36,7 +37,10 @@ import {
   resolveSimulatedParadiseChoice,
   resolveMove,
   resolveSetHQ,
-  resolveY2KDiscard} from "../services/firebaseService.js";
+  resolveY2KDiscard,
+  choosePostVisit,
+  chooseEndOfTurn,
+  chooseStartOfTurn} from "../services/firebaseService.js";
 import { runAIAction, clearAIPromptMemory } from '../services/aiService.js';
 import PlayerIcon from "../assets/Meeple.vue" 
 import CrownIcon from "../assets/Crown.vue" 
@@ -211,6 +215,7 @@ const handForDisplay = computed(() => {
         return {
           ...card,
           displayCost: `${costInCards} card${costInCards !== 1 ? 's' : ''}`,
+          secret: card.secret,
           displayScore: displayScore,
         };
       });
@@ -229,6 +234,7 @@ const handForDisplay = computed(() => {
         return {
           ...card,
           displayCost: Math.max(0, displayCost),
+          secret: card.secret,
           displayScore: displayScore,
         };
       });
@@ -238,6 +244,7 @@ const handForDisplay = computed(() => {
   // Default: just add display properties with original values
   return handSource.map(card => ({
     ...card,
+    secret: card.secret,
     displayCost: parseInt(card.cost),
     displayScore: parseInt(card.score),
   }));
@@ -252,9 +259,26 @@ function getPerpetualsForPlayer(player) {
   return allPerpetuals;
 }
 
+function getPoisonTokensForPlayer(player) {
+  if (!player?.poison) return [];
+  return player.poison.map((p, index) => ({
+    id: `poison-${index}`,
+    name: 'Poison',
+    type: 'token',
+    instanceId: `poison-${player.id}-${index}`
+  }));
+}
+
 const clientPlayerPerpetuals = computed(() => {
   if (!clientPlayer.value) return [];
   return getPerpetualsForPlayer(clientPlayer.value);
+});
+
+const clientPlayerPerpetualsAndTokens = computed(() => {
+  if (!clientPlayer.value) return [];
+  const perpetuals = getPerpetualsForPlayer(clientPlayer.value);
+  const poisonTokens = getPoisonTokensForPlayer(clientPlayer.value);
+  return [...perpetuals, ...poisonTokens];
 });
 
 const toysChoiceCards = computed(() => {
@@ -333,6 +357,10 @@ function parseLogMessage(message) {
 
 const inspectedDescriptionParts = computed(() => {
   return parseTextForIcons(inspectedItem.value?.description);
+});
+
+const inspectedSecretParts = computed(() => {
+  return parseTextForIcons(inspectedItem.value?.secret);
 });
 
 const inspectedBoxParts = computed(() => {
@@ -579,6 +607,12 @@ async function handleCardClick(card, cardIndex) {
     if (cardIndex > -1 && card.type === 'P') {
       await resolveY2KDiscard(gameData.value.lobbyId, clientPlayer.value.id, cardIndex);
     }
+  } else if (clientPlayer.value?.prompt === 'start-of-turn-choice') {
+    if (card.secret) {
+      await chooseStartOfTurn(gameData.value.lobbyId, clientPlayer.value.id, {
+        choiceId: 'secret-card', secretIndex: cardIndex,
+      });
+    }
   }
 }
 
@@ -604,6 +638,10 @@ async function handleResolveInvestments(choice) {
 
 async function handleResolveTreasureMap(choice) {
   await resolveTreasureMap(gameData.value.lobbyId, clientPlayer.value.id, choice);
+}
+
+async function handleResolveSunboat(choice) {
+  await resolveSunboat(gameData.value.lobbyId, clientPlayer.value.id, choice);
 }
 
 async function handleResolveTradeGoods(choice) {
@@ -744,6 +782,16 @@ function inspectItem(item, type) {
     };
     return;
   }
+  if (item.id === 'poison-token') {
+    inspectedItem.value = {
+      name: 'Poison',
+      description: 'At the end of your next turn, lose $4 and discard a card.',
+      color: 'purple',
+      type: 'token',
+      id: 'poison-token',
+    };
+    return;
+  }
 
   const description = (item.description || '').replace(/\*/g, '\n');
   if (type === 'zone') {
@@ -766,6 +814,7 @@ function inspectItem(item, type) {
       type: 'card',
       costForDisplay: item.cost, // Store original cost for display
       scoreInstruction: item['score-instruction'],
+      secret: item.secret,
     };
   }
 }
@@ -784,19 +833,24 @@ function getAssociatedItem(zoneId) {
     if (card) return { ...card, itemType: 'card' };
   }
   if (zoneId === 'underground-haven') {
-    return {
-      id: 'sage',
-      name: 'Sage',
-      itemType: 'token',
-    };
+    return { id: 'sage', name: 'Sage', itemType: 'token' };
+  }
+  if (zoneId === 'poison-earth') {
+    return { id: 'poison-token', name: 'Poison', itemType: 'token' };
+  }
+  if (zoneId === 'age-of-atlantis') {
+    return { id: 'hq', name: 'HQ', itemType: 'token' };
+  }
+  if (zoneId === 'greek-america' || zoneId === 'new-france') {
+    return { id: 'base', name: 'Base', itemType: 'token' };
   }
   return null;
 }
 
-function getCardTypeColor(cardType, forText = false) {
-  if (cardType === 'M') return '#f7ecb9ff';
-  if (cardType === 'P') return forText ? '#87CEFA' : '#c6d7eaff';
-  if (cardType === 'S') return forText ? '#F08080' : '#F44336'; // LightCoral for text, original for bg
+function getCardTypeColor(card, forText = false) {
+  if (card.secret) return '#F08080';
+  if (card.cardType === 'M') return '#f7ecb9ff';
+  if (card.cardType === 'P') return forText ? '#87CEFA' : '#c6d7eaff';
   return '#fff';
 }
 
@@ -817,6 +871,18 @@ async function handleInquisitionChoice(cardIndex) {
   await resolveInquisition(gameData.value.lobbyId, clientPlayer.value.id, { cardIndex });
 }
 
+async function handleChoosePostVisit(choiceId) {
+  await choosePostVisit(gameData.value.lobbyId, clientPlayer.value.id, choiceId);
+}
+
+async function handleChooseEndOfTurn(choiceId) {
+  await chooseEndOfTurn(gameData.value.lobbyId, clientPlayer.value.id, choiceId);
+}
+
+async function handleChooseStartOfTurn(choiceId) {
+  await chooseStartOfTurn(gameData.value.lobbyId, clientPlayer.value.id, choiceId);
+}
+
 </script>
 
 <template>
@@ -825,14 +891,14 @@ async function handleInquisitionChoice(cardIndex) {
     <div v-if="inspectedItem" class="inspector-overlay" :style="{ zIndex: (showAllCardsModal || showAllZonesModal) ? 1001 : 1000 }" @click="closeInspector">
       <div class="inspector-modal" @click.stop>
         <button class="close-btn" @click="closeInspector">X</button>
-        <div class="inspector-header" :style="{ backgroundColor: inspectedItem.type === 'card' ? getCardTypeColor(inspectedItem.cardType) : inspectedItem.color }">
+        <div class="inspector-header" :style="{ backgroundColor: inspectedItem.type === 'card' ? getCardTypeColor(inspectedItem) : inspectedItem.color }">
           {{ inspectedItem.name }}
         </div>
         <div class="inspector-body">
           <div v-if="inspectedItem.type === 'card'" class="inspector-coins">
             <CoinIcon :amount="inspectedItem.coin" />
           </div>
-          <div class="inspector-content-wrapper" :class="{ 'column-layout': inspectedItem.box || getAssociatedItem(inspectedItem.id) }">
+          <div class="inspector-content-wrapper" :class="{ 'column-layout': inspectedItem.box || inspectedItem.secret || getAssociatedItem(inspectedItem.id) }">
             <p class="inspector-description">
               <span v-for="(part, index) in inspectedDescriptionParts" :key="index">
                 <CoinIcon v-if="part.type === 'coin'" :amount="part.value" class="inline-coin-icon" />
@@ -841,6 +907,12 @@ async function handleInquisitionChoice(cardIndex) {
                 <template v-else>{{ part.value }}</template>
               </span>
             </p>
+          <p v-if="inspectedItem.secret" class="inspector-secret-text">
+            <span v-for="(part, index) in inspectedSecretParts" :key="index">
+              <template v-if="part.type === 'text'">{{ part.value }}</template>
+              <!-- You can add icon handling here if secrets can contain icons -->
+            </span>
+          </p>
             <div v-if="inspectedItem.type === 'zone' && getAssociatedItem(inspectedItem.id)" class="inspector-associated-card-container">
               <template v-if="getAssociatedItem(inspectedItem.id).itemType === 'card'">
                 <div class="hand-card" :class="{ 'card-m': getAssociatedItem(inspectedItem.id).type === 'M', 'card-p': getAssociatedItem(inspectedItem.id).type === 'P', 'card-s': getAssociatedItem(inspectedItem.id).type === 'S' }" @contextmenu.prevent="inspectItem(getAssociatedItem(inspectedItem.id), 'card')">
@@ -851,8 +923,22 @@ async function handleInquisitionChoice(cardIndex) {
                   <div class="card-score"><CoinIcon :amount="getAssociatedItem(inspectedItem.id).cost" class="inline-coin-icon" /> for {{ getAssociatedItem(inspectedItem.id).score }} <CrownIcon fill="gold" class="inline-crown-icon" /></div>
                 </div>
               </template>
+              <template v-else-if="getAssociatedItem(inspectedItem.id).itemType === 'token' && ['hq', 'base'].includes(getAssociatedItem(inspectedItem.id).id)">
+                <div class="associated-token-icon-container">
+                  <HQIcon v-if="getAssociatedItem(inspectedItem.id).id === 'hq'" fill="#d2b48c" class="associated-token-icon" />
+                  <BaseIcon v-if="getAssociatedItem(inspectedItem.id).id === 'base'" fill="#d2b48c" class="associated-token-icon" />
+                  <span class="associated-token-name">{{ getAssociatedItem(inspectedItem.id).name }}</span>
+                </div>
+              </template>
               <template v-else-if="getAssociatedItem(inspectedItem.id).itemType === 'token'">
-                <div class="perpetual-card sage-card" @contextmenu.prevent="inspectItem(getAssociatedItem(inspectedItem.id), 'token')">
+                <div
+                  class="perpetual-card"
+                  :class="{
+                    'sage-card': getAssociatedItem(inspectedItem.id).id === 'sage',
+                    'poison-card': getAssociatedItem(inspectedItem.id).id === 'poison-token',
+                  }"
+                  @contextmenu.prevent="inspectItem(getAssociatedItem(inspectedItem.id), 'token')"
+                >
                   {{ getAssociatedItem(inspectedItem.id).name }}
                 </div>
               </template>
@@ -924,14 +1010,14 @@ async function handleInquisitionChoice(cardIndex) {
         <input type="text" v-model="cardSearchQuery" class="modal-search-bar" placeholder="Search by name or description...">
         <div class="all-cards-grid">
           <template v-if="allCardsActiveTab === 'base'">
-            <div v-for="card in filteredBaseCards" :key="card.id" class="hand-card" :class="{ 'card-m': card.type === 'M', 'card-p': card.type === 'P' }" @contextmenu.prevent="inspectItem(card, 'card')">
+            <div v-for="card in filteredBaseCards" :key="card.id" class="hand-card" :class="{ 'card-m': card.type === 'M' && !card.secret, 'card-p': card.type === 'P', 'card-secret': card.secret }" @contextmenu.prevent="inspectItem(card, 'card')">
               <div class="card-header">{{ card.name }}</div>
               <div class="card-coins"><CoinIcon :amount="card.coin" /></div>
               <div class="card-score"><CoinIcon :amount="card.cost" class="inline-coin-icon" /> for {{ card.score }} <CrownIcon fill="gold" class="inline-crown-icon" /></div>
             </div>
           </template>
           <template v-if="allCardsActiveTab === 'alternate'">
-            <div v-for="card in filteredAlternateCards" :key="card.id" class="hand-card" :class="{ 'card-m': card.type === 'M', 'card-p': card.type === 'P' }" @contextmenu.prevent="inspectItem(card, 'card')">
+            <div v-for="card in filteredAlternateCards" :key="card.id" class="hand-card" :class="{ 'card-m': card.type === 'M' && !card.secret, 'card-p': card.type === 'P', 'card-secret': card.secret }" @contextmenu.prevent="inspectItem(card, 'card')">
               <div class="card-header">{{ card.name }}</div>
               <div class="card-coins"><CoinIcon :amount="card.coin" /></div>
               <div class="card-score"><CoinIcon :amount="card.cost" class="inline-coin-icon" /> for {{ card.score }} <CrownIcon fill="gold" class="inline-crown-icon" /></div>
@@ -974,21 +1060,32 @@ async function handleInquisitionChoice(cardIndex) {
           <div class="player-stats">
             <div class="player-stat-item">Coins: <CoinIcon :amount="player.coins" class="inline-coin-icon"/></div>
             <div class="player-stat-item">Cards: {{ player.id === user?.uid ? (localPlayerHand?.length ?? 0) : player.handCount }}</div>
+            <div v-if="player.gizmoCount > 0" class="player-stat-item">Gizmos: {{ player.gizmoCount }}</div>
+            <div v-if="player.tradeGoodsCount > 0" class="player-stat-item">Trade Goods: {{ player.tradeGoodsCount }}</div>
           </div>
         </div>
         <div v-if="expandedPlayers.has(player.id)" class="player-perpetuals-list">
-          <h4 class="perpetuals-header">Perpetual Cards:</h4>
-          <div v-if="getPerpetualsForPlayer(player).length === 0" class="no-perpetuals">
+          <h4 class="perpetuals-header">Perpetuals & Tokens:</h4>
+          <div v-if="getPerpetualsForPlayer(player).length === 0 && getPoisonTokensForPlayer(player).length === 0" class="no-perpetuals">
             None
           </div>
           <div v-else class="perpetual-scroll-small">
-            <div 
-              v-for="card in getPerpetualsForPlayer(player)" 
-              :key="card.instanceId || card.id"
-              class="perpetual-card" 
-              :class="{ 'sage-card': card.id === 'sage' }"
-              @contextmenu.prevent="inspectItem(card, 'card')">
-              {{ card.name }}
+            <div class="perpetual-and-tokens-container">
+              <div 
+                v-for="card in getPerpetualsForPlayer(player)" 
+                :key="card.instanceId || card.id"
+                class="perpetual-card" 
+                :class="{ 'sage-card': card.id === 'sage' }"
+                @contextmenu.prevent="inspectItem(card, 'card')">
+                {{ card.name }}
+              </div>
+              <div 
+                v-for="token in getPoisonTokensForPlayer(player)" 
+                :key="token.instanceId"
+                class="perpetual-card poison-card" 
+                @contextmenu.prevent="inspectItem({ id: 'poison-token' }, 'token')">
+                {{ token.name }}
+              </div>
             </div>
           </div>
         </div>
@@ -1076,7 +1173,7 @@ async function handleInquisitionChoice(cardIndex) {
           <button class="option-btn" @click="onResolveChoice(true, 'greek-america-base-choice')">Place Base</button>
           <button class="option-btn" @click="onResolveChoice(false, 'greek-america-base-choice')">Decline</button>
         </template>
-        <template v-else-if="clientPlayer?.prompt === 'scientist-enclave-choice'">
+        <template v-else-if="clientPlayer?.prompt === 'scientist-enclave'">
           <p class="prompt-instruction">Scientist Enclave: Retreat a <CrownIcon fill="gold" class="inline-crown-icon" /> from Age II to take a Gizmo?</p>
           <button class="option-btn" @click="onResolveChoice(true, 'scientist-enclave')" :disabled="clientPlayer.scoreTrack[1] === 0">Retreat <CrownIcon fill="gold" class="inline-crown-icon" />, Take Gizmo</button>
           <button class="option-btn" @click="onResolveChoice(false, 'scientist-enclave')">Draw 2 cards</button>
@@ -1111,6 +1208,11 @@ async function handleInquisitionChoice(cardIndex) {
           <p class="prompt-instruction">Investments: Discard to gain half of money earned this turn?</p>
           <button class="option-btn" @click="handleResolveInvestments(true)">Discard for <CoinIcon :amount="Math.floor((clientPlayer.moneyGainedThisTurn || 0) / 2)" class="inline-coin-icon"/></button>
           <button class="option-btn" @click="handleResolveInvestments(false)">Decline</button>
+        </template>
+        <template v-else-if="clientPlayer?.prompt === 'sunboat-choice'">
+          <p class="prompt-instruction">Sunboat of Ra: Discard to take an extra turn?</p>
+          <button class="option-btn" @click="handleResolveSunboat(true)">Discard for Extra Turn</button>
+          <button class="option-btn" @click="handleResolveSunboat(false)">Decline</button>
         </template>
         <template v-else-if="clientPlayer?.prompt === 'treasure-map-choice'">
           <p class="prompt-instruction">Treasure Map: Discard to draw 2 cards?</p>
@@ -1213,6 +1315,30 @@ async function handleInquisitionChoice(cardIndex) {
           <p class="prompt-instruction">Y2K: Discard a Perpetual card to gain <CoinIcon amount="12" class="inline-coin-icon"/>?</p>
           <p class="prompt-instruction">(Click a card to discard)</p>
           <button class="option-btn" @click="handleY2KDecline">Decline</button>
+        </template>
+        <template v-else-if="clientPlayer?.prompt === 'post-visit-choice'">
+          <p class="prompt-instruction">Choose a post-visit effect to resolve:</p>
+          <button 
+            v-for="choice in clientPlayer.promptContext.choices" 
+            :key="choice.id" 
+            class="option-btn" 
+            @click="handleChoosePostVisit(choice.id)">{{ choice.label }}</button>
+        </template>
+        <template v-else-if="clientPlayer?.prompt === 'end-of-turn-choice'">
+          <p class="prompt-instruction">Choose an end-of-turn effect to resolve:</p>
+          <button 
+            v-for="choice in clientPlayer.promptContext.choices" 
+            :key="choice.id" 
+            class="option-btn" 
+            @click="handleChooseEndOfTurn(choice.id)">{{ choice.label }}</button>
+        </template>
+        <template v-else-if="clientPlayer?.prompt === 'start-of-turn-choice'">
+          <p class="prompt-instruction">Choose a start-of-turn effect to resolve, or play a Secret card from your hand.</p>
+          <button 
+            v-for="choice in clientPlayer.promptContext.choices" 
+            :key="choice.id" 
+            class="option-btn" 
+            @click="handleChooseStartOfTurn({choiceId: choice.id})">{{ choice.label }}</button>
         </template>
       </div>
     </div>
@@ -1368,10 +1494,9 @@ async function handleInquisitionChoice(cardIndex) {
           <div 
             class="hand-card" 
             :class="{ 
-              'card-m': card.type === 'M',
+              'card-m': card.type === 'M' && !card.secret,
               'card-p': card.type === 'P',
-              'card-s': card.type === 'S', 
-              'scoreable': ['score', 'space-age', 'alien-contact'].includes(clientPlayer.prompt) && clientPlayer.scoreableCards?.includes(index),
+              'card-secret': card.secret, 'scoreable': ['score', 'space-age', 'alien-contact'].includes(clientPlayer.prompt) && clientPlayer.scoreableCards?.includes(index),
               'discardable': ['discard', 'imperial-china', 'inquisition', 'pass-card', 'greek-america-discard-choice', 'return-card'].includes(clientPlayer.prompt),
               'discard-selected': clientPlayer.prompt === 'discard-many' && discardSelection.includes(index),
               'discard-n-selected': clientPlayer.prompt === 'discard-n' && discardSelection.includes(index),
@@ -1379,7 +1504,9 @@ async function handleInquisitionChoice(cardIndex) {
               'cybernetics-playable': clientPlayer.prompt === 'cybernetics-hand',
               'y2k-discardable': clientPlayer.prompt === 'y2k-discard' && card.type === 'P',
               'gizmo-playable': clientPlayer.prompt === 'gizmo-choice' && card.type === 'M' && card.id !== 'gizmo',
-              'clickable': ['score', 'space-age', 'alien-contact', 'discard', 'discard-many', 'imperial-china', 'inquisition', 'play', 'cybernetics-hand', 'pass-card', 'greek-america-discard-choice', 'return-card', 'y2k-discard'].includes(clientPlayer.prompt)
+              'clickable': ['score', 'space-age', 'alien-contact', 'discard', 'discard-many', 'imperial-china', 'inquisition', 'play', 'cybernetics-hand', 'pass-card', 'greek-america-discard-choice', 'return-card', 'y2k-discard'].includes(clientPlayer.prompt) ||
+                           (clientPlayer.prompt === 'start-of-turn-choice' && card.secret),
+              'card-secret-clickable': clientPlayer.prompt === 'start-of-turn-choice' && card.secret
             }"
             @click="handleCardClick(card, index)"
             @contextmenu.prevent="inspectItem(card, 'card')"
@@ -1399,6 +1526,7 @@ async function handleInquisitionChoice(cardIndex) {
           </li>
       </div>
       
+
       <!-- Perpetual Cards Scrollable -->
       <div v-if="clientPlayer"  class="perpetual-scroll">
         <div 
@@ -1407,11 +1535,18 @@ async function handleInquisitionChoice(cardIndex) {
           class="perpetual-card" 
           :class="{ 
             'cybernetics-perpetual-selectable': clientPlayer.prompt === 'cybernetics-perpetual',
-            'sage-card': card.id === 'sage'
+            'sage-card': card.id === 'sage',
           }"
           @contextmenu.prevent="inspectItem(card, 'card')"
           @click="onPerpetualClick(card)">
           {{ card.name }}
+        </div>
+        <div 
+          v-for="token in getPoisonTokensForPlayer(clientPlayer)" 
+          :key="token.instanceId"
+          class="perpetual-card poison-card" 
+          @contextmenu.prevent="inspectItem({ id: 'poison-token' }, 'token')">
+          {{ token.name }}
         </div>
       </div>
     </div>
@@ -2015,8 +2150,7 @@ body {
 }
 .hand-card.card-m { background-color: #e6d8ad; } /* Soft Gold */
 .hand-card.card-p { background-color: #c6d7ea; } /* Light Blue/Grey */
-.hand-card.card-s { background-color: #F44336; } /* Red */
-
+.hand-card.card-secret { background-color: #F08080; } /* Light Red for Secret cards */
 
 .hand-card.scoreable {
   outline: 3px solid purple;
@@ -2054,6 +2188,12 @@ body {
 .hand-card.y2k-discardable {
   outline: 3px solid #0D9488; /* Teal */
   outline-offset: -2px;
+  cursor: pointer;
+}
+
+.hand-card.card-secret-clickable {
+  outline: 3px solid #F08080; /* Light Red */
+  box-shadow: 0 0 10px 3px #F08080;
   cursor: pointer;
 }
 
@@ -2150,6 +2290,11 @@ body {
   background-color: #d2b48c; /* Tan/Brown color for Sage */
   color: black;
 }
+.perpetual-card.poison-card {
+  background-color: purple;
+  color: white;
+  cursor: pointer;
+}
 
 .zone-coin-icon {
   width: 30px;
@@ -2186,12 +2331,15 @@ body {
 }
 
 .perpetual-scroll-small {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
   max-height: 150px;
   overflow-y: auto;
   padding-right: 5px;
+}
+
+.perpetual-and-tokens-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .perpetual-scroll-small .perpetual-card {
@@ -2329,6 +2477,17 @@ body {
   margin-top: 10px;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.inspector-secret-text {
+  background-color: #F08080; /* Light Red */
+  color: black;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
 }
 
 
@@ -2481,6 +2640,30 @@ body {
 .inspector-content-wrapper.column-layout {
   flex-direction: column;
   align-items: center; /* Center items when in a column */
+}
+
+.associated-token-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: #4f4f4f;
+  border-radius: 8px;
+}
+
+.associated-token-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.associated-token-name {
+  font-weight: bold;
+  color: #e0e0e0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .inspector-description {

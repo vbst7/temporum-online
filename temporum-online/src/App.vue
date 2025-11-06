@@ -24,6 +24,7 @@ import {
 } from "./services/firebaseService.js";
 import { runAITest } from "./services/firebaseService.js"; // This will run a single test from the suite
 import testSuite from "./tests/testSuite.js"; // Import the predefined test suite
+import { manualTests } from "./tests/manualTests.js"; // Import manual tests
 import { db } from "./firebaseConfig.js";
 import GameInProgress from './components/GameInProgress.vue';
 
@@ -347,6 +348,40 @@ function showFailureDetails(testResult) {
   }
 }
 
+async function onCreateManualTestGame(testId) {
+  const test = manualTests.find(t => t.testId === testId);
+  if (!test) {
+    console.error(`Manual test with ID ${testId} not found.`);
+    return;
+  }
+
+  const humanPlayerId = user.value.uid;
+
+  // Deep copy and replace the placeholder ID with the actual human player's ID
+  const processedConfig = JSON.parse(JSON.stringify(test.config));
+  if (processedConfig.initialHands && processedConfig.initialHands.player_1) {
+    processedConfig.initialHands[humanPlayerId] = processedConfig.initialHands.player_1;
+    delete processedConfig.initialHands.player_1;
+  }
+  if (processedConfig.initialPerpetuals && processedConfig.initialPerpetuals.player_1) {
+    processedConfig.initialPerpetuals[humanPlayerId] = processedConfig.initialPerpetuals.player_1;
+    delete processedConfig.initialPerpetuals.player_1;
+  }
+
+  const lobbyPayload = {
+    isTest: true,
+    aiPlayerCount: 0,
+    testConfig: {
+      ...processedConfig,
+      autoStart: true,
+      testName: `Manual Test: ${test.buttonLabel}`
+    }
+  };
+
+  const newId = await createLobby(nickName.value.trim(), lobbyPayload);
+  if (newId) currentLobbyId.value = newId;
+}
+
 function handleBeforeUnload() {
   // This function is now empty as the service layer handles listener cleanup.
   // The onDisconnect functionality for presence is best handled with RTDB, which is a separate feature.
@@ -400,6 +435,11 @@ function handleBeforeUnload() {
           <span v-else-if="isSuiteFinished">Rerun Test Suite</span>
           <span v-else>Run Test Suite</span>
         </button>
+        <div v-for="test in manualTests" :key="test.testId">
+          <button @click="onCreateManualTestGame(test.testId)" class="lobby-btn create-ai-btn">
+            Manual Test: {{ test.buttonLabel }}
+          </button>
+        </div>
         <p class="test-instructions">
           Click to run the predefined test suite from <code>src/tests/testSuite.js</code>.
         </p>

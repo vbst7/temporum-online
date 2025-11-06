@@ -158,7 +158,7 @@ function runAITestAction(aiPlayer, lobbyId) {
     case "toys":
     case "industrial-revolution":
     case "greek-america-base-choice":
-    case "scientist-enclave-choice":
+    case "scientist-enclave":
     case "age-of-plastic":
     {
       const scriptAction = aiPlayer.script?.[0];
@@ -437,6 +437,32 @@ function runAITestAction(aiPlayer, lobbyId) {
         uid: aiPlayer.id,
         payload: {zoneIndex: scriptAction.zoneIndex},
         actionId: `RESOLVE_MOVE-${Date.now()}`,
+      };
+    }
+    case "post-visit-choice": {
+      const scriptAction = aiPlayer.script?.[0];
+      if (scriptAction?.type !== "post-visit-choice") {
+        logger.warn(`AI [${aiPlayer.name}] has prompt 'post-visit-choice' but script action is '${scriptAction?.type}'. Cannot act.`);
+        return null;
+      }
+      return {
+        type: "CHOOSE_POST_VISIT",
+        uid: aiPlayer.id,
+        payload: {choiceId: scriptAction.choiceId},
+        actionId: `CHOOSE_POST_VISIT-${Date.now()}`,
+      };
+    }
+    case "end-of-turn-choice": {
+      const scriptAction = aiPlayer.script?.[0];
+      if (scriptAction?.type !== "end-of-turn-choice") {
+        logger.warn(`AI [${aiPlayer.name}] has prompt 'end-of-turn-choice' but script action is '${scriptAction?.type}'. Cannot act.`);
+        return null;
+      }
+      return {
+        type: "CHOOSE_END_OF_TURN",
+        uid: aiPlayer.id,
+        payload: {choiceId: scriptAction.choiceId},
+        actionId: `CHOOSE_END_OF_TURN-${Date.now()}`,
       };
     }
     case "set-hq":

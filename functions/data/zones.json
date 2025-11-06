@@ -284,13 +284,6 @@
 		"color": "brown"
 	},
 	{
-		"id": "information-age",
-		"name": "Information Age",
-		"description": "Visit each real Zone you have not visited yet this turn in which you have 4 ♛ or more, from present to past.",
-		"age": "4",
-		"color": "silver"
-	},
-	{
 		"id": "nuclear-wasteland",
 		"name": "Nuclear Wasteland",
 		"description": "If you rule here, gain $2 and visit an earlier real Zone.",

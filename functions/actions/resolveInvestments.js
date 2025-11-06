@@ -1,8 +1,6 @@
 const {logMessage} = require("../utils/logHelpers");
 const {gainMoney, discardCard} = require("../utils/resourceHelpers");
-const {
-  checkAnubisAndEndTurn,
-  declareWinner,
+const {processEndOfTurnQueue,
 } = require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -33,13 +31,13 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   const hand = privateSnap.exists ? privateSnap.data().hand : [];
   lobbyData.lastAction = {type: "investments-choice", uid: playerId,
     context: {choice: choice}};
-  const id = player.promptContext.id;
 
   if (choice) {
-    const cardIndex = player.perpetuals.turnEnd.findIndex((c) => c.id === id);
+    const cardIndex = player.perpetuals.turnEnd.findIndex((c) =>
+      c.id === "investments");
     if (cardIndex > -1) {
-      const [card] = player.perpetuals.turnEnd.splice(cardIndex, 1);
-      card.type = "P";
+      const [perpetual] = player.perpetuals.turnEnd.splice(cardIndex, 1);
+      const card = {...perpetual, type: "P"};
       const moneyToGain = Math.floor(player.moneyGainedThisTurn / 2);
 
       hand.push(card); // Temporarily add card back to hand
@@ -57,14 +55,9 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   delete player.promptContext;
 
   // After resolving, continue the end-of-turn sequence.
-  const result = await checkAnubisAndEndTurn(lobbyId, lobbyData);
-  if (result && result.winnerDeclared) {
-    const winnerPayload = await declareWinner(lobbyId, lobbyData,
-        result.winnerPlayer, result.reason);
-    batch.update(privateRef, {hand});
-    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
-  }
-
+  await processEndOfTurnQueue(player, lobbyData, lobbyId);
+  // If processPostVisitQueue set a new prompt or ended the turn,
+  // the game loop will pick it up.
   player.handCount = hand.length;
   batch.update(privateRef, {hand});
   return {updatePayload: lobbyData, batch};

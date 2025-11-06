@@ -1,6 +1,7 @@
-const {logMessage, peekStack} = require("../utils/logHelpers");
+const {logMessage} = require("../utils/logHelpers");
 const {drawCards, discardCard} = require("../utils/resourceHelpers");
-const {executeZoneFollowUp} = require("../utils/followUpHelpers");
+const {processPostVisitQueue, declareWinner} =
+require("../utils/turnManagementHelpers");
 const {getFirestore} = require("firebase-admin/firestore");
 /**
  * Handles the 'resolveTreasureMap' action.
@@ -10,7 +11,7 @@ const {getFirestore} = require("firebase-admin/firestore");
  * { choice: true }).
  * @param {object} afterData The current state of the lobby document.
  * @return {object} The updated lobby data.
- */
+ **/
 exports.execute = async (lobbyId, playerId, payload, afterData) => {
   const db = getFirestore();
   const batch = db.batch();
@@ -32,25 +33,26 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     type: "treasure-map-choice",
     uid: playerId, context: {choice: choice},
   };
-  const id = player.promptContext.id;
+
+  console.log(`Choice: ${choice}`);
 
   if (choice) {
-    const cardIndex = player.perpetuals.postVisit.findIndex((c) => c.id === id);
+    const cardIndex = player.perpetuals.postVisit.findIndex((c) =>
+      c.id === "treasure-map");
     if (cardIndex > -1) {
-      const [card] = player.perpetuals.postVisit.splice(cardIndex, 1);
+      const [perpetual] = player.perpetuals.postVisit.splice(cardIndex, 1);
+      const cardToDiscard = {...perpetual, type: "P"}; // Ensure type is present
 
       // Temporarily add card back to hand for discard function
-      hand.push(card);
-      discardCard(player, hand, hand.length - 1, lobbyData,
-          {name: "Treasure Map", type: "P"});
+      hand.push(cardToDiscard);
+      discardCard(player, hand, hand.length - 1, lobbyData);
       drawCards(player, hand, 2, lobbyData, {name: "Treasure Map", type: "P"});
     }
   } else {
-    const card = player.perpetuals.postVisit.find((c) => c.id === id);
     logMessage(lobbyData, [
       {type: "player", value: player.name, color: player.color},
       {type: "text", value: " keeps their "},
-      {type: "card", value: card.name, cardType: card.type},
+      {type: "card", value: "Treasure Map", cardType: "P"},
       {type: "text", value: "."},
     ]);
   }
@@ -60,12 +62,19 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
   player.handCount = hand.length;
   batch.update(privateRef, {hand});
 
+
   // The Treasure Map choice is done. Continue the original resolution.
-  const action = peekStack(lobbyData);
-  if (action && action.type === "zone") {
-    const turnEnded = await executeZoneFollowUp(player, action.id, lobbyData,
-        lobbyId, action.instruction);
-    if (turnEnded) return {updatePayload: lobbyData, batch};
+  // Re-run the post-visit queue processing to handle any remaining effects.
+  const result = await processPostVisitQueue(lobbyId, lobbyData);
+  if (result?.winnerDeclared) {
+    const winnerPayload = await declareWinner(
+        lobbyId,
+        lobbyData,
+        result.winnerPlayer,
+        result.reason,
+    );
+    return {updatePayload: {...lobbyData, ...winnerPayload}, batch};
   }
+
   return {updatePayload: lobbyData, batch};
 };

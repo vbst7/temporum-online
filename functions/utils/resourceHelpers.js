@@ -89,6 +89,21 @@ function shuffle(array) {
 function _gainMoney(player, amount, lobbyData, source = null) {
   if (amount === 0) return;
 
+  // --- Bank Perpetual Check ---
+  // Must happen before moneyGainedThisTurn is incremented.
+  // Only trigger on positive gains, and only on the very first one.
+  // Also, don't trigger on gains from Bank itself to prevent loops.
+  if (amount > 0 && player.moneyGainedThisTurn === 0 &&
+    source?.name !== "Bank") {
+    if (player.perpetuals?.gain) {
+      const bankCount = player.perpetuals.gain
+          .filter((c) => c.id === "bank").length;
+      if (bankCount > 0) {
+        _gainMoney(player, bankCount, lobbyData, {name: "Bank", type: "P"});
+      }
+    }
+  }
+
   let moneyGained = Number(amount);
   // player cannot lose more money than they have
   if (player.coins < (0 - moneyGained)) moneyGained = (0 - player.coins);
@@ -104,7 +119,7 @@ function _gainMoney(player, amount, lobbyData, source = null) {
     if (source) {
       messageParts.push({type: "text", value: " ("});
       if (source.type && source.name) { // It's a card or zone object
-        const isCard = ["M", "P", "S"].includes(source.type);
+        const isCard = ["M", "P"].includes(source.type);
         if (isCard) {
           messageParts.push({type: "card", value: source.name,
             cardType: source.type});
@@ -133,6 +148,20 @@ function _gainMoney(player, amount, lobbyData, source = null) {
  * @param {object|string} [source=null] The source of the draw action.
  */
 exports.drawCards = function(player, hand, count, lobbyData, source = null) { // eslint-disable-line max-len
+  // --- Detective Perpetual Check ---
+  // This must happen before any cards are drawn.
+  // We use a flag to prevent this from triggering itself in a loop.
+  if (hand.length === 0 && count > 0 && !source?.isDetectiveDraw) {
+    if (player.perpetuals?.draw) {
+      const detectiveCount = player.perpetuals.draw
+          .filter((c) => c.id === "detective").length;
+      if (detectiveCount > 0) {
+        // Increase the number of cards to draw for this action.
+        count += detectiveCount;
+      }
+    }
+  }
+
   // If there's a face-up card, it's no longer face-up once drawing starts.
   if (lobbyData.topCard) {
     lobbyData.topCard = null;
@@ -211,8 +240,22 @@ exports.discardCard = function(player, hand, cardIndex, lobbyData,
   }
   if (hand && hand[cardIndex]) {
     const card = hand.splice(cardIndex, 1)[0];
-    lobbyData.discardPile.push(card);
-    console.log(card);
+
+    // Intercept Gizmos and Trade Goods to return them to their piles
+    if (card.id === "gizmo") {
+      if (!lobbyData.gizmoPile) lobbyData.gizmoPile = [];
+      lobbyData.gizmoPile.push(card);
+      player.gizmoCount = (player.gizmoCount || 0) - 1;
+    } else if (card.id === "trade-goods") {
+      if (!lobbyData.tradeGoodsPile) lobbyData.tradeGoodsPile = [];
+      lobbyData.tradeGoodsPile.push(card);
+      player.tradeGoodsCount = (player.tradeGoodsCount || 0) - 1;
+    } else {
+      // Only push to the main discard pile if it's not a special card
+      lobbyData.discardPile.push(card);
+    }
+    player.handCount = hand.length;
+
     const messageParts = [
       {type: "player", value: player.name, color: player.color},
       {type: "text", value: " discarded "},
@@ -364,7 +407,7 @@ exports.stealMoney = function(player, amount, lobbyData, source = null) {
   if (source) {
     messageParts.push({type: "text", value: " ("});
     if (source.type && source.name) { // It's a card or zone object
-      const isCard = ["M", "P", "S"].includes(source.type);
+      const isCard = ["M", "P"].includes(source.type);
       if (isCard) {
         messageParts.push({type: "card", value: source.name,
           cardType: source.type});
@@ -416,7 +459,7 @@ exports.moveToZone = function(player, zoneIndex, lobbyData, source = null ) {
       {type: "zone", value: oldZone.name, color: oldZone.color},
       {type: "text", value: " ("},
     ];
-    const isCard = ["M", "P", "S"].includes(source.type);
+    const isCard = ["M", "P"].includes(source.type);
     if (isCard) {
       messageParts.push({type: "card", value: source.name,
         cardType: source.type});

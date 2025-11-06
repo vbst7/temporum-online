@@ -81,12 +81,17 @@ const actionHandlers = {
   RESOLVE_INVESTMENTS: require("./actions/resolveInvestments").execute,
   RESOLVE_TREASURE_MAP:
     require("./actions/resolveTreasureMap").execute,
+  RESOLVE_SUNBOAT: require("./actions/resolveSunboat").execute,
   RESOLVE_SIMULATED_PARADISE_CHOICE:
     require("./actions/resolveSimulatedParadiseChoice").execute,
   RESOLVE_MOVE: require("./actions/resolveMove").execute,
   RESOLVE_GIZMO_CHOICE: require("./actions/resolveGizmoChoice").execute,
   RETREAT_CROWN: require("./actions/retreatCrown").execute,
   RESOLVE_SET_HQ: require("./actions/resolveSetHq").execute,
+  CHOOSE_END_OF_TURN: require("./actions/chooseEndOfTurn").execute,
+  CHOOSE_START_OF_TURN: require("./actions/chooseStartOfTurn").execute,
+  CHOOSE_POST_VISIT:
+    require("./actions/choosePostVisit.js").execute,
   SELECT_CYBERNETICS_PERPETUAL:
     require("./actions/selectCyberneticsPerpetual").execute,
   SELECT_CYBERNETICS_HAND_CARD:

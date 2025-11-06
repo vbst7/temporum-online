@@ -89,8 +89,6 @@ function initializeGame(
     const altCards = alternateCards.default || alternateCards;
     mainDeckCardsData.push(...altCards);
   }
-
-  console.log(specialCardsData);
   const allCards = [...mainDeckCardsData, ...specialCardsData];
 
   let deck;
@@ -132,6 +130,9 @@ function initializeGame(
     prompt: "",
     cardsInPlay: [],
     GOP: false,
+    gizmoCount: 0,
+    tradeGoodsCount: 0,
+    newRevolutionaries: false,
     visitedZones: [],
     perpetuals: {
       play: [],
@@ -141,6 +142,7 @@ function initializeGame(
       postScore: [],
       turnEnd: [],
       discard: [],
+      gain: [],
       visit: [],
       postVisit: [],
       advance: [],
