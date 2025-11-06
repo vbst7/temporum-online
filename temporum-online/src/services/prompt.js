@@ -37,8 +37,8 @@ export async function playCard(lobbyId, playerId, cardIndex) {
   await dispatchAction(lobbyId, "PLAY_CARD", { cardIndex }, playerId);
 }
 
-export async function advanceCrown(lobbyId, playerId, ageIndex) {
-  await dispatchAction(lobbyId, "ADVANCE_CROWN", { ageIndex }, playerId);
+export async function advanceCrown(lobbyId, playerId, advances) {
+  await dispatchAction(lobbyId, "ADVANCE_CROWN", advances, playerId);
 }
 
 export async function discardAndContinue(lobbyId, playerId, cardIndex) {

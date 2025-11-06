@@ -120,7 +120,7 @@ const age3Tests = [
       initialHands: { "ai_1": [{ id: "artist", name: "Artist" }] },
       initialCoins: { "ai_1": 0, "ai_2": 5 },
       aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 },
-          { type: "advanceCrown", ageIndex: 0 }] },
+          { type: "advanceCrown", advances: [0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -1029,7 +1029,7 @@ const age2Tests = [
           { type: "visitZone", zoneIndex: 1 },
           { type: "choose", choice: "score" },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(8).fill({ type: "advanceCrown", ageIndex: 0 })
+          ...Array(8).fill({ type: "advanceCrown", advances: [0] })
         ]
       },
       endCondition: {
@@ -1255,7 +1255,7 @@ const age2Tests = [
           { type: "visitZone", zoneIndex: 1 },
           { type: "choose", choice: "score" },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(8).fill({ type: "advanceCrown", ageIndex: 0 })
+          ...Array(8).fill({ type: "advanceCrown", advances: [0] })
         ]
       },
       endCondition: {
@@ -1899,7 +1899,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+        { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -1924,7 +1924,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+        { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -1970,7 +1970,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+        { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -1996,7 +1996,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(5).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -2021,7 +2021,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -2046,7 +2046,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -2069,7 +2069,7 @@ const age1Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -2094,7 +2094,7 @@ const age1Tests = [
         "ai_1": [
           { type: "visitZone", zoneIndex: 0 },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
         ]
       },
       endCondition: {
@@ -2200,12 +2200,11 @@ const age1Tests = [
         "ai_1": [
           { type: "visitZone", zoneIndex: 0 },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
         ],
         "ai_2": [
           { type: "resolveBabylonianChoice", choice: true },
-          { type: "advanceCrown", ageIndex: 0 },
-          { type: "advanceCrown", ageIndex: 0 }
+          { type: "advanceCrown", advances: [0, 0] }
         ]
       },
       endCondition: {
@@ -2234,7 +2233,7 @@ const age1Tests = [
         "ai_1": [
           { type: "visitZone", zoneIndex: 0 },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+          { type: "advanceCrown", advances: [0, 0, 0, 0] }
         ],
         "ai_2": [{ type: "resolveBabylonianChoice", choice: false }]
       },
@@ -2263,15 +2262,13 @@ const age1Tests = [
         "ai_1": [
           { type: "visitZone", zoneIndex: 0 },
           { type: "scoreCard", cardIndex: 0 },
-          ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+          { type: "advanceCrown", advances: [0, 0, 0, 0] },
           { type: "resolveBabylonianChoice", choice: true },
-          { type: "advanceCrown", ageIndex: 0 },
-          { type: "advanceCrown", ageIndex: 0 }
+          { type: "advanceCrown", advances: [0, 0] }
         ],
         "ai_2": [
           { type: "resolveBabylonianChoice", choice: true },
-          { type: "advanceCrown", ageIndex: 0 },
-          { type: "advanceCrown", ageIndex: 0 }
+          { type: "advanceCrown", advances: [0, 0] }
         ]
       },
       endCondition: {
@@ -2341,7 +2338,7 @@ const age4Tests = [
       selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Age of Plastic", "Prohibition Era", "Age of Cats", "Mafia City-States", "Floating Cities", "Robot Uprising"],
       initialHands: { "ai_1": [{ id: "artist", name: "Artist" }] },
       initialCoins: { "ai_1": 4, "ai_2": 1 },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "scoreCard", cardIndex: 0 }, ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "scoreCard", cardIndex: 0 }, { type: "advanceCrown", advances: [0,0,0,0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2360,7 +2357,7 @@ const age4Tests = [
       initialHands: { "ai_1": [{ id: "artist", name: "Artist" }] },
       initialCoins: { "ai_1": 4, "ai_2": 0 },
       initialZones: { "ai_1": 4},
-      aiScripts: { "ai_1": [{ type: "changeHistory", zoneIndex: 4 }, { type: "visitZone", zoneIndex: 8 }, { type: "scoreCard", cardIndex: 0 }, ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })] },
+      aiScripts: { "ai_1": [{ type: "changeHistory", zoneIndex: 4 }, { type: "visitZone", zoneIndex: 8 }, { type: "scoreCard", cardIndex: 0 }, { type: "advanceCrown", advances: [0, 0, 0, 0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2398,7 +2395,7 @@ const age4Tests = [
       selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Age of Plastic", "Prohibition Era", "Age of Cats", "Robot Uprising", "Floating Cities", "Steampunk Empire"],
       initialHands: { "ai_1": [] },
       initialScoreTrack: { "ai_1": [9, 1, 0, 0] }, // Rules 2 ages
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "advanceCrown", ageIndex: 0 }] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "advanceCrown", advances: [0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2420,10 +2417,10 @@ const age4Tests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Cost 4, gain 4 crowns
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
+        { type: "scoreCard", cardIndex: 0 }, // Cost 4, gain 4 crowns
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -2446,8 +2443,8 @@ const age4Tests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0], "ai_2": [0, 5, 0, 0] },
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Cost 4, gain 4 crowns
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -2470,8 +2467,8 @@ const age4Tests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Cost 4, gain 4 crowns
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -2533,9 +2530,9 @@ const age4Tests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
-        { type: "resolveOptionalZone", choice: true, zoneId: "cats" },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(8).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "resolveOptionalZone", choice: true, zoneId: "cats" }, // Cost 10
+        { type: "scoreCard", cardIndex: 0 }, // Cost 8, gain 8 crowns
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -2802,7 +2799,7 @@ const age4Tests = [
       selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Age of Plastic", "Prohibition Era", "Age of Cats", "Steampunk Empire", "Floating Cities", "Robot Uprising"],
       initialHands: { "ai_1": [{ id: "artist", name: "Artist" }] },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "discardAndContinue", cardIndex: 0 }, ...Array(3).fill({ type: "advanceCrown", ageIndex: 0 })] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "discardAndContinue", cardIndex: 0 }, { type: "advanceCrown", advances: [0, 0, 0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2823,7 +2820,7 @@ const age4Tests = [
       initialHands: { "ai_1": [] },
       initialCoins: { "ai_1": 4 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "scoreCard", cardIndex: 0 }, ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "scoreCard", cardIndex: 0 }, { type: "advanceCrown", advances: [0, 0, 0, 0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2954,7 +2951,7 @@ const age4Tests = [
       initialCoins: { "ai_1": 4, "ai_2": 4 },
       initialScoreTrack: { "ai_1": [9, 0, 0, 1] },
       aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "choose", choice: "score" }, 
-        { type: "scoreCard", cardIndex: 0 }, ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })] },
+        { type: "scoreCard", cardIndex: 0 }, { type: "advanceCrown", advances: [0, 0, 0, 0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -2974,7 +2971,7 @@ const age4Tests = [
       initialCoins: { "ai_1": 4, "ai_2": 4 },
       initialScoreTrack: { "ai_1": [0, 0, 10, 0]},
       aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 7 }, { type: "choose", choice: "score" }, 
-        { type: "scoreCard", cardIndex: 0 }, ...Array(4).fill({ type: "advanceCrown", ageIndex: 2 })] },
+        { type: "scoreCard", cardIndex: 0 }, { type: "advanceCrown", advances: [2, 2, 2, 2] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -3204,10 +3201,10 @@ const age4Tests = [
       initialCoins: { "ai_1": 4 },
       initialScoreTrack: { "ai_1": [4, 4, 0, 2] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
+        { type: "visitZone", zoneIndex: 7 }, // Cost 4, gain 4 crowns
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 1 }),
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
+        { type: "advanceCrown", advances: [1, 1, 1, 1] },
       ]},
       endCondition: {
         type: "AND",
@@ -3255,7 +3252,7 @@ const age4Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
         { type: "playCard", cardIndex: 0 },
-        { type: "advanceCrown", ageIndex: 1 },
+        { type: "advanceCrown", advances: [1] },
       ]},
       endCondition: {
         type: "AND",
@@ -3362,7 +3359,7 @@ const age4Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 },
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
         { type: "playCard", cardIndex: 0 },
       ]},
       endCondition: {
@@ -3459,7 +3456,7 @@ const age4Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 }, // Visit SP
         { type: "playCard", cardIndex: 0 },
-        { type: "advanceCrown", ageIndex: 0 }
+        { type: "advanceCrown", advances: [0] }
       ]},
       endCondition: {
         type: "AND",
@@ -3508,7 +3505,7 @@ const age4Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 }, // Visit SP
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+        { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -3534,7 +3531,7 @@ const age4Tests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 7 }, // Visit SP
         { type: "scoreCard", cardIndex: 0 },
-        ...Array(5).fill({ type: "advanceCrown", ageIndex: 0 })
+        ...Array(5).fill({ type: "advanceCrown", advances: [0] })
       ]},
       endCondition: {
         type: "AND",
@@ -3690,7 +3687,7 @@ const age4Tests = [
         { type: "visitZone", zoneIndex: 7 },
         { type: "scoreCard", cardIndex: 0 }, // Score Artist
         { type: "discardMany", discardArray: [0] }, // Discard Conspiracy
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -3760,7 +3757,7 @@ const age4Tests = [
         { type: "visitZone", zoneIndex: 7 },
         { type: "scoreCard", cardIndex: 0 }, // Score Artist
         // No discard prompt
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",

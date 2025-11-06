@@ -54,7 +54,7 @@ const isSuiteFinished = computed(() => {
 
 const recommendedTimelines = {
   'Beginners': ['Ancient Egypt', 'Roman Empire', 'Renaissance', 'Industrial Revolution', 'Balloon Revolution', 'American Civil War', 'Steampunk Empire', 'Age of Toys', 'Robot Uprising', 'Nanotech Wonderland'],
-  'Friendly': ['Stone Age', 'Pax Buddha', 'Age of Cults', 'Balloon Revolution', 'Summer of Love', 'Prohibition Era', 'Information Age', 'Utopia', 'Warm Globe', 'Communist Utopia'],
+  //'Friendly': ['Stone Age', 'Pax Buddha', 'Age of Cults', 'Balloon Revolution', 'Summer of Love', 'Prohibition Era', 'Information Age', 'Utopia', 'Warm Globe', 'Communist Utopia'],
   'Harsh': ['Ice Age', 'Inquisition', 'Plague', 'Bureaucracy', 'Great Depression', 'Police State', 'Savagery', 'Icy Wasteland', 'Nuclear Wasteland', 'Mere Anarchy'],
   'Riches': ['Primitive Paradise', 'Crusades', 'Holy Norse Empire', 'American Civil War', 'Plutocracy', 'Age of Discovery', 'Nanotech Wonderland', 'Age of Cats', 'Age of Toys', 'Warm Globe'],
   'Control': ['Iron Age', 'Roman Empire', 'Egyptian America', 'Prohibition Era', 'American Civil War', 'French Revolution', 'Nuclear Wasteland', 'Space Age', 'Robot Uprising', 'Icy Wasteland'],

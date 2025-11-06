@@ -325,13 +325,14 @@ function runAITestAction(aiPlayer, lobbyId) {
     }
     case "advance":
     {
-      const scriptAction = aiPlayer.script?.[0];
-      // If the script explicitly says to advance, use that.
-      if (scriptAction?.type === "advanceCrown") {
+      const scriptAction = aiPlayer.script?.[0]; // Get the first action from the script
+      if (scriptAction?.type === "advanceCrown" && scriptAction?.advances) {
+        // New batched advancement: use the 'advances' array directly from the script
+        logger.info(`AI [${aiPlayer.name}] is performing batched advance: ${JSON.stringify(scriptAction.advances)}`);
         return {
           type: "ADVANCE_CROWN",
           uid: aiPlayer.id,
-          payload: {ageIndex: scriptAction.ageIndex},
+          payload: { advances: scriptAction.advances },
           actionId: `ADVANCE_CROWN-${Date.now()}`,
         };
       }

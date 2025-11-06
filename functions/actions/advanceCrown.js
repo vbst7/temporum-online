@@ -13,13 +13,15 @@ const {promptScore, promptPlay} = require("../utils/promptingHelpers");
  * Handles the 'advanceCrown' action.
  * @param {string} lobbyId The ID of the lobby.
  * @param {string} playerId The ID of the player initiating the action.
- * @param {object} payload The action-specific payload (e.g., { ageIndex: 0 }).
+ * @param {object} payload The action-specific payload { advances: [0, 1] }.
  * @param {object} afterData The current state of the lobby document.
  * @return {object} The updated lobby data, potentially with winner information.
  */
 exports.execute = async (lobbyId, playerId, payload, afterData) => {
   const lobbyData = afterData;
-  const {ageIndex} = payload;
+  const advances = payload.advances || [];
+
+  logMessage(lobbyData, `Advances: ${JSON.stringify(payload)}`);
 
   const playerIndex = lobbyData.players.findIndex((p) => p.id === playerId);
   if (playerIndex === -1) {
@@ -35,61 +37,129 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
     return lobbyData;
   }
 
-  // Ensure the age is valid for advancing from (0, 1, 2) and has crowns
-  if (ageIndex < 0 || ageIndex > 2 || player.scoreTrack[ageIndex] <= 0) {
-    logMessage(lobbyData, `Cannot advance from Age ${ageIndex + 1}.`, "warn");
-    return lobbyData;
+  // Validate the requested advances
+  const tempScoreTrack = [...player.scoreTrack];
+  for (const ageIndex of advances) {
+    if (ageIndex < 0 || ageIndex > 2 || tempScoreTrack[ageIndex] <= 0) {
+      logMessage(lobbyData, `Invalid advance sequence from Age ${ageIndex + 1}.`, "warn"); // eslint-disable-line max-len
+      return lobbyData;
+    }
+    tempScoreTrack[ageIndex]--;
+    advanceSpecificCrown(player, ageIndex, lobbyData, null);
   }
 
-  // Perform the advance action
-  advanceSpecificCrown(player, ageIndex, lobbyData);
+  // Advancing is complete
+  player.prompt = ""; // Advancing is done
+  const promptContext = player.promptContext || {};
+  const source = player.promptContext?.source;
+  const origin = player.promptContext?.origin;
+  const advancedCount = player.promptContext?.crownCount || 0;
 
-  // Check if advancing is complete
-  if (player.crowns <= 0 || player.scoreTrack[3] === 10) {
-    player.prompt = ""; // Advancing is done
-    const promptContext = player.promptContext || {};
-    const source = player.promptContext?.source;
-    const origin = player.promptContext?.origin;
-    const advancedCount = player.promptContext?.crownCount || 0;
-
-    const messageParts = [
-      {type: "player", value: player.name, color: player.color},
-      {
-        type: "text",
-        value: ` advanced ${advancedCount === 1 ? "a" : advancedCount} `, // eslint-disable-line max-len
-      },
-      {type: "crown"},
-    ];
-    if (source && source.type !== "score") {
-      messageParts.push({type: "text", value: " ("});
-      if (source.type && source.name) {
-        const sourceType = (source.type === "M" || source.type === "P") ?
-          "card" : "zone";
-        const logPart = {type: sourceType, value: source.name,
-          cardType: source.type};
-        if (sourceType === "zone") {
-          logPart.color = source.type;
-        }
-        messageParts.push(logPart);
-      } else {
-        messageParts.push({type: "text", value: source});
+  const messageParts = [
+    {type: "player", value: player.name, color: player.color},
+    {
+      type: "text",
+      value: ` advanced ${advancedCount === 1 ? "a" : advancedCount} `, // eslint-disable-line max-len
+    },
+    {type: "crown"},
+  ];
+  if (source && source.type !== "score") {
+    messageParts.push({type: "text", value: " ("});
+    if (source.type && source.name) {
+      const sourceType = (source.type === "M" || source.type === "P") ?
+        "card" : "zone";
+      const logPart = {type: sourceType, value: source.name,
+        cardType: source.type};
+      if (sourceType === "zone") {
+        logPart.color = source.type;
       }
-      messageParts.push({type: "text", value: ")"});
+      messageParts.push(logPart);
+    } else {
+      messageParts.push({type: "text", value: source});
     }
-    messageParts.push({type: "text", value: "."});
-    logMessage(lobbyData, messageParts);
+    messageParts.push({type: "text", value: ")"});
+  }
+  messageParts.push({type: "text", value: "."});
+  logMessage(lobbyData, messageParts);
 
-    // --- Post-Play Logic (e.g., for Visionary) ---
-    if (source && source.name === "Visionary" && source.type === "M") {
+  // --- Post-Play Logic (e.g., for Visionary) ---
+  if (source && source.name === "Visionary" && source.type === "M") {
+    const db = getFirestore();
+    const privateRef = db.collection("lobbies").doc(lobbyId)
+        .collection("private").doc(playerId);
+    const privateSnap = await privateRef.get();
+    const hand = privateSnap.exists ? privateSnap.data().hand : [];
+
+    await promptPlay(player, hand, lobbyData, lobbyId);
+
+    // If promptPlay set a new prompt, we stop here.
+    if (player.prompt) {
+      player.handCount = hand.length;
+      const batch = db.batch();
+      batch.update(privateRef, {hand});
+      return {updatePayload: lobbyData, batch};
+    }
+  }
+  if (source && source.name === "Assassin's Dagger" && source.type === "M") {
+    const ruledCount = timesRuled(player, lobbyData.players);
+    if (ruledCount > 0) {
+      gainMoney(player, ruledCount * 4, lobbyData,
+          {name: "Assassin's Dagger", type: "M"});
+    }
+  }
+
+  // --- End Post-Play Logic ---
+
+  // --- Post-Score Logic ---
+  if (promptContext.source?.type === "score") {
+    const scoredCardId = promptContext.scoredCardId;
+
+    // 1. Secret Society & Meet Younger Self (these modify the hand)
+    if ((player.perpetuals?.postScore && player.perpetuals.postScore
+        .length > 0) || scoredCardId === "meet-younger-self") {
       const db = getFirestore();
       const privateRef = db.collection("lobbies").doc(lobbyId)
           .collection("private").doc(playerId);
       const privateSnap = await privateRef.get();
       const hand = privateSnap.exists ? privateSnap.data().hand : [];
 
-      await promptPlay(player, hand, lobbyData, lobbyId);
+      const multiplier = promptContext.instruction === "age-of-cats" ? 2 : 1;
+      if (player.perpetuals?.postScore) {
+        const secretSocietyCount = player.perpetuals.postScore
+            .filter((c) => c.id === "secret-society").length;
+        if (secretSocietyCount > 0) {
+          drawCards(player, hand, secretSocietyCount * multiplier, lobbyData,
+              {name: "Secret Society", type: "P"});
+        }
+      }
 
-      // If promptPlay set a new prompt, we stop here.
+      if (scoredCardId === "meet-younger-self") {
+        drawCards(player, hand, multiplier, lobbyData,
+            {name: "Meet Younger Self", type: "M"});
+      }
+
+      player.handCount = hand.length;
+      const batch = getFirestore().batch();
+      batch.update(privateRef, {hand});
+      await batch.commit();
+    }
+
+    // 2. Visionary (this sets a new prompt)
+    if (scoredCardId === "visionary") {
+      const db = getFirestore();
+      const privateRef = db.collection("lobbies").doc(lobbyId)
+          .collection("private").doc(playerId);
+      const privateSnap = await privateRef.get();
+      const hand = privateSnap.exists ? privateSnap.data().hand : [];
+
+      await promptScore(player, hand, "", lobbyData);
+      // If scored in Age of Cats, we need to score a second time.
+      if (promptContext.instruction === "age-of-cats") {
+        lobbyData.resolutionStack.push({type: "card", id: "visionary",
+          instruction: "score-again"});
+      }
+
+      // If promptScore set a new prompt, we stop here.
       if (player.prompt) {
         player.handCount = hand.length;
         const batch = db.batch();
@@ -97,102 +167,35 @@ exports.execute = async (lobbyId, playerId, payload, afterData) => {
         return {updatePayload: lobbyData, batch};
       }
     }
-    if (source && source.name === "Assassin's Dagger" && source.type === "M") {
-      const ruledCount = timesRuled(player, lobbyData.players);
-      if (ruledCount > 0) {
-        gainMoney(player, ruledCount * 4, lobbyData,
-            {name: "Assassin's Dagger", type: "M"});
-      }
+  }
+  // --- End Post-Score Logic ---
+  // If the stack is empty, it means this was the last action.
+  if (lobbyData.resolutionStack.length > 0) {
+    const action = peekStack(lobbyData);
+    if (action && action.type === "zone") {
+      const turnEnded = await executeZoneFollowUp(player, action.id,
+          lobbyData, lobbyId, action.instruction);
+      // Follow-up handled the update and turn progression
+      if (turnEnded) return {...lobbyData};
+    } else if (action && action.type === "card") {
+      const turnEnded = await executeCardFollowUp(player, action.id,
+          lobbyData, lobbyId, action.instruction);
+      if (turnEnded) return {...lobbyData};
     }
-
-    // --- End Post-Play Logic ---
-
-    // --- Post-Score Logic ---
-    if (promptContext.source?.type === "score") {
-      const scoredCardId = promptContext.scoredCardId;
-
-      // 1. Secret Society & Meet Younger Self (these modify the hand)
-      if ((player.perpetuals?.postScore && player.perpetuals.postScore
-          .length > 0) || scoredCardId === "meet-younger-self") {
-        const db = getFirestore();
-        const privateRef = db.collection("lobbies").doc(lobbyId)
-            .collection("private").doc(playerId);
-        const privateSnap = await privateRef.get();
-        const hand = privateSnap.exists ? privateSnap.data().hand : [];
-
-        const multiplier = promptContext.instruction === "age-of-cats" ? 2 : 1;
-        if (player.perpetuals?.postScore) {
-          const secretSocietyCount = player.perpetuals.postScore
-              .filter((c) => c.id === "secret-society").length;
-          if (secretSocietyCount > 0) {
-            drawCards(player, hand, secretSocietyCount * multiplier, lobbyData,
-                {name: "Secret Society", type: "P"});
-          }
-        }
-
-        if (scoredCardId === "meet-younger-self") {
-          drawCards(player, hand, multiplier, lobbyData,
-              {name: "Meet Younger Self", type: "M"});
-        }
-
-        player.handCount = hand.length;
-        const batch = getFirestore().batch();
-        batch.update(privateRef, {hand});
-        await batch.commit();
-      }
-
-      // 2. Visionary (this sets a new prompt)
-      if (scoredCardId === "visionary") {
-        const db = getFirestore();
-        const privateRef = db.collection("lobbies").doc(lobbyId)
-            .collection("private").doc(playerId);
-        const privateSnap = await privateRef.get();
-        const hand = privateSnap.exists ? privateSnap.data().hand : [];
-
-        await promptScore(player, hand, "", lobbyData);
-        // If scored in Age of Cats, we need to score a second time.
-        if (promptContext.instruction === "age-of-cats") {
-          lobbyData.resolutionStack.push({type: "card", id: "visionary",
-            instruction: "score-again"});
-        }
-
-        // If promptScore set a new prompt, we stop here.
-        if (player.prompt) {
-          player.handCount = hand.length;
-          const batch = db.batch();
-          batch.update(privateRef, {hand});
-          return {updatePayload: lobbyData, batch};
-        }
-      }
+  } else {
+    // Stack is empty, proceed to post-visit queue.
+    const {processPostVisitQueue} =
+    require("../utils/turnManagementHelpers");
+    if (origin === "start-of-turn") {
+      await processStartOfTurnQueue(player, lobbyData, lobbyId);
+      return lobbyData;
     }
-    // --- End Post-Score Logic ---
-    // If the stack is empty, it means this was the last action.
-    if (lobbyData.resolutionStack.length > 0) {
-      const action = peekStack(lobbyData);
-      if (action && action.type === "zone") {
-        const turnEnded = await executeZoneFollowUp(player, action.id,
-            lobbyData, lobbyId, action.instruction);
-        // Follow-up handled the update and turn progression
-        if (turnEnded) return {...lobbyData};
-      } else if (action && action.type === "card") {
-        const turnEnded = await executeCardFollowUp(player, action.id,
-            lobbyData, lobbyId, action.instruction);
-        if (turnEnded) return {...lobbyData};
-      }
-    } else {
-      // Stack is empty, proceed to post-visit queue.
-      const {processPostVisitQueue} =
-      require("../utils/turnManagementHelpers");
-      if (origin === "start-of-turn") {
-        await processStartOfTurnQueue(player, lobbyData, lobbyId);
-        return lobbyData;
-      }
-      const result = await processPostVisitQueue(lobbyId, lobbyData);
-      if (result?.winnerDeclared) {
-        return {...lobbyData};
-      }
+    const result = await processPostVisitQueue(lobbyId, lobbyData);
+    if (result?.winnerDeclared) {
+      return {...lobbyData};
     }
   }
+
 
   // Update the player object within the main players array.
   lobbyData.players[playerIndex] = player;

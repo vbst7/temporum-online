@@ -16,8 +16,8 @@ export const cardTests = [
         { type: "visitZone", zoneIndex: 4 },
         { type: "playCard", cardIndex: 0 },
         { type: "visitZone", zoneIndex: 7 },
-        { type: "discardAndContinue", cardIndex: 0 },
-        ...Array(3).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "discardAndContinue", cardIndex: 0 }, // Discard for Steampunk Empire
+        { type: "advanceCrown", advances: [0, 0, 0] }, // Advance 3 crowns for Steampunk Empire
       ]},
       endCondition: {
         type: "AND",
@@ -197,8 +197,8 @@ export const cardTests = [
       selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Cold War", "Prohibition Era", "Age of Cats", "Steampunk Empire", "Floating Cities", "Robot Uprising"],
       initialHands: { "ai_1": [{ id: "barbarian-horde", name: "Barbarian Horde" }, { id: "artist", name: "Artist" }] },
       initialCoins: { "ai_1": 0 },
-      initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "discardMany", discardArray: [0] }, { type: "advanceCrown", ageIndex: 0 }] },
+      initialScoreTrack: { "ai_1": [10, 0, 0, 0] }, // Cost 9, gain 1 crown
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "discardMany", discardArray: [0] }, { type: "advanceCrown", advances: [0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -545,7 +545,7 @@ export const cardTests = [
       initialHands: { "ai_1": [{ id: "inventor", name: "Inventor" }] },
       initialCoins: { "ai_1": 0 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "resolveInventor", choice: "advance" }, { type: "advanceCrown", ageIndex: 0 }, { type: "advanceCrown", ageIndex: 0 }] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "resolveInventor", choice: "advance" }, { type: "advanceCrown", advances: [0, 0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -622,7 +622,7 @@ export const cardTests = [
       selectedZones: ["Ancient Egypt", "Roman Empire", "Bright Ages", "Age of Discovery", "Cold War", "Prohibition Era", "Age of Cats", "Steampunk Empire", "Floating Cities", "Robot Uprising"],
       initialHands: { "ai_1": [{ id: "kings-sword", name: "King's Sword" }] },
       initialCoins: { "ai_1": 0 },
-      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "advanceCrown", ageIndex: 0 }] },
+      aiScripts: { "ai_1": [{ type: "visitZone", zoneIndex: 4 }, { type: "playCard", cardIndex: 0 }, { type: "advanceCrown", advances: [0] }] },
       endCondition: {
         type: "AND",
         conditions: [
@@ -1018,7 +1018,7 @@ export const cardTests = [
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 4 },
         { type: "playCard", cardIndex: 0 },
-        { type: "advanceCrown", ageIndex: 0 },
+        { type: "advanceCrown", advances: [0] }, // Visionary gives 1 crown
         { type: "playCard", cardIndex: 0 },
       ]},
       endCondition: {
@@ -1042,10 +1042,10 @@ export const cardTests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
         { type: "visitZone", zoneIndex: 0 },
-        { type: "scoreCard", cardIndex: 0 }, // Score Visionary
-        ...Array(8).fill({ type: "advanceCrown", ageIndex: 0 }),
-        { type: "scoreCard", cardIndex: 0 }, // Score Artist
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 1 }),
+        { type: "scoreCard", cardIndex: 0 }, // Score Visionary (Cost 16, gain 8 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0, 0] },
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 4 crowns)
+        { type: "advanceCrown", advances: [1, 1, 1, 1] },
       ]},
       endCondition: {
         type: "playerScoreTrack", playerId: "ai_1", value: [2, 4, 4, 0]
@@ -1063,9 +1063,9 @@ export const cardTests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       initialPerpetuals: { "ai_1": { play: [{ id: "black-market", name: "Black Market" }] } },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 4 },
+        { type: "visitZone", zoneIndex: 4 }, // Cost 0
         { type: "playCard", cardIndex: 0 },
-        { type: "advanceCrown", ageIndex: 0 },
+        { type: "advanceCrown", advances: [0] }, // Visionary gives 1 crown
         { type: "playCard", cardIndex: 0 },
       ]},
       endCondition: {
@@ -1088,9 +1088,9 @@ export const cardTests = [
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       initialPerpetuals: { "ai_1": { postPlay: [{ id: "gang-of-pickpockets", name: "Gang of Pickpockets" }] } },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 4 },
+        { type: "visitZone", zoneIndex: 4 }, // Cost 0
         { type: "playCard", cardIndex: 0 },
-        { type: "advanceCrown", ageIndex: 0 },
+        { type: "advanceCrown", advances: [0] }, // Visionary gives 1 crown
         { type: "playCard", cardIndex: 0 },
       ]},
       endCondition: {
@@ -1113,10 +1113,10 @@ export const cardTests = [
       initialCoins: { "ai_1": 34 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
-        { type: "resolveOptionalZone", choice: true, zoneId: "cats" },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(10).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
+        { type: "resolveOptionalZone", choice: true, zoneId: "cats" }, // Cost 10
+        { type: "scoreCard", cardIndex: 0 }, // Score Meet Younger Self (Cost 12 * 2 = 24, gain 10 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1142,15 +1142,14 @@ export const cardTests = [
       initialCoins: { "ai_1": 74 }, // 10 for Cats, 56 for Visionary, 4 for Artist, 4 for Artist
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
-        { type: "resolveOptionalZone", choice: true, zoneId: "cats" },
-        { type: "scoreCard", cardIndex: 0 }, // Score Visionary
-        ...Array(10).fill({ type: "advanceCrown", ageIndex: 0 }), // 16 crowns
-        ...Array(6).fill({ type: "advanceCrown", ageIndex: 1 }), // 16 crowns
-        { type: "scoreCard", cardIndex: 0 }, // Score first Artist
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 1 }),
-        { type: "scoreCard", cardIndex: 0 }, // Score second Artist
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 2 }),
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
+        { type: "resolveOptionalZone", choice: true, zoneId: "cats" }, // Cost 10
+        { type: "scoreCard", cardIndex: 0 }, // Score Visionary (Cost 28 * 2 = 56, gain 8 * 2 = 16 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1] }, // 16 crowns
+        { type: "scoreCard", cardIndex: 0 }, // Score first Artist (Cost 4 * 2 = 8, gain 4 * 2 = 8 crowns)
+        { type: "advanceCrown", advances: [1, 1, 1, 1, 2, 2, 2, 2] }, // 8 crowns
+        { type: "scoreCard", cardIndex: 0 }, // Score second Artist (Cost 4 * 2 = 8, gain 4 * 2 = 8 crowns)
+        { type: "advanceCrown", advances: [2, 2, 2, 2, 3, 3, 3, 3] }, // 8 crowns
       ]},
       endCondition: {
         type: "AND",
@@ -1173,10 +1172,10 @@ export const cardTests = [
       initialCoins: { "ai_1": 8 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 4 },
+        { type: "visitZone", zoneIndex: 4 }, // Cost 0
         { type: "playCard", cardIndex: 0 }, // Play Pilgrims
-        { type: "scoreCard", cardIndex: 0 }, // Score Golden Goose
-        ...Array(6).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Score Golden Goose (Cost 8, gain 6 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1198,10 +1197,10 @@ export const cardTests = [
       initialCoins: { "ai_1": 0 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 4 },
+        { type: "visitZone", zoneIndex: 4 }, // Cost 0
         { type: "playCard", cardIndex: 0 }, // Play Pilgrims
-        { type: "scoreCard", cardIndex: 0 }, // Score Artist
-        ...Array(2).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 2 crowns)
+        { type: "advanceCrown", advances: [0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1223,11 +1222,11 @@ export const cardTests = [
       initialCoins: { "ai_1": 8 },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       initialPerpetuals: { "ai_1": { score: [{ id: "conspiracy", name: "Conspiracy" }] } },
-      aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 4 },
+      aiScripts: { "ai_1": [ // Cost 0
+        { type: "visitZone", zoneIndex: 4 }, // Cost 0
         { type: "playCard", cardIndex: 0 }, // Play Pilgrims
-        { type: "scoreCard", cardIndex: 0 }, // Score Golden Goose
-        ...Array(7).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "scoreCard", cardIndex: 0 }, // Score Golden Goose (Cost 8, gain 7 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1250,10 +1249,10 @@ export const cardTests = [
       initialPerpetuals: { "ai_1": { postScore: [{ id: "secret-society", name: "Secret Society" }] } },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
         { type: "scoreCard", cardIndex: 0 }, // Score Artist
         { type: "discardMany", discardArray: [0] }, // Discard Conspiracy
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1278,11 +1277,11 @@ export const cardTests = [
       initialCoins: { "ai_1": 4 },
       initialPerpetuals: { "ai_1": { postScore: [{ id: "secret-society", name: "Secret Society" }] } },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
-        { type: "playCard", cardIndex: 0 },
+      aiScripts: { "ai_1": [ // Cost 0
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 4 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
+        { type: "playCard", cardIndex: 0 }, // Play Artist (Cost 0)
       ]},
       endCondition: {
         type: "AND",
@@ -1305,10 +1304,10 @@ export const cardTests = [
       initialCoins: { "ai_1": 4 },
       initialPerpetuals: { "ai_1": { postScore: [{ id: "secret-society", name: "Secret Society" }] } },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 })
+      aiScripts: { "ai_1": [ // Cost 0
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 4 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0] }
       ]},
       endCondition: {
         type: "AND",
@@ -1330,12 +1329,12 @@ export const cardTests = [
       initialCoins: { "ai_1": 8 },
       initialPerpetuals: { "ai_1": { postScore: [{ id: "secret-society", name: "Secret Society" }] } },
       initialScoreTrack: { "ai_1": [10, 0, 0, 0] },
-      aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 7 },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(4).fill({ type: "advanceCrown", ageIndex: 0 }),
+      aiScripts: { "ai_1": [ // Cost 0
+        { type: "visitZone", zoneIndex: 7 }, // Cost 0
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 4 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
+        { type: "scoreCard", cardIndex: 0 }, // Score Artist (Cost 4, gain 4 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0] },
       ]},
       endCondition: {
         type: "AND",
@@ -1357,10 +1356,10 @@ export const cardTests = [
       initialCoins: { "ai_1": 20 },
       initialPerpetuals: { "ai_1": { postScore: [{ id: "secret-society", name: "Secret Society" }] } },
       aiScripts: { "ai_1": [
-        { type: "visitZone", zoneIndex: 1 },
-        { type: "choose", choice: "score" },
-        { type: "scoreCard", cardIndex: 0 },
-        ...Array(8).fill({ type: "advanceCrown", ageIndex: 0 }),
+        { type: "visitZone", zoneIndex: 1 }, // Cost 0
+        { type: "choose", choice: "score" }, // Choose to score
+        { type: "scoreCard", cardIndex: 0 }, // Score Golden Goose (Cost 0, gain 8 crowns)
+        { type: "advanceCrown", advances: [0, 0, 0, 0, 0, 0, 0, 0] },
         { type: "resolveDiscardForMoney", cardIndex: null , sourceZoneId: "imperial-china"},
       ]},
       endCondition: {

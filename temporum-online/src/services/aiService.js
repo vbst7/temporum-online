@@ -1,30 +1,37 @@
 import {
+  changeHistory,
+  declineChangeHistory,
   visitZone,
   scoreCard,
   playCard,
   advanceCrown,
-  retreatCrown,
   executeChoice,
   resolveOptionalZone,
   discardAndContinue,
-  resolveInventor,
+  resolveDiscardForMoney,
   resolveInquisition,
-  discardMany,
+  discardMany, 
+  resolveInventor,
+  resolveBabylonianChoice,
+  resolveGizmoChoice,
+  retreatCrown,
   resolvePredictTheFuture,
   selectCyberneticsPerpetual,
   selectCyberneticsHandCard,
-  resolveToysChoice,
   resolveInvestments,
   resolveTreasureMap,
-  selectCardToPass,
-  declineChangeHistory,
+  resolveSunboat,
   resolveTradeGoods,
+  resolveToysChoice,
+  selectCardToPass,
+  returnCard,
   resolveSimulatedParadiseChoice,
-  changeHistory,
   resolveMove,
   resolveSetHQ,
-  resolveGizmoChoice,
-  resolveBabylonianChoice,
+  resolveY2KDiscard,
+  choosePostVisit,
+  chooseEndOfTurn,
+  chooseStartOfTurn,
 } from "./firebaseService.js"; // Note: firebaseService.js re-exports prompt.js functions
 import { db } from "../firebaseConfig.js"; // Import db directly for fetching private data
 import { doc, getDoc } from "firebase/firestore"; // Import doc and getDoc
@@ -204,19 +211,28 @@ export async function runAIAction(aiPlayer, gameData) {
       break;
     case 'advance':
       {
-        const possibleAges = [];
-        // Can advance from Age I, II, or III (indices 0, 1, 2)
-        for (let i = 0; i < 3; i++) {
-          if (aiPlayer.scoreTrack[i] > 0) {
-            possibleAges.push(i);
+        const crownsToAdvance = aiPlayer.crowns;
+        if (crownsToAdvance > 0) {
+          const advances = [];
+          const tempScoreTrack = [...aiPlayer.scoreTrack];
+
+          for (let i = 0; i < crownsToAdvance; i++) {
+            const possibleAges = [];
+            // Find valid ages to advance from (0, 1, 2)
+            for (let j = 0; j < 3; j++) {
+              if (tempScoreTrack[j] > 0) {
+                possibleAges.push(j);
+              }
+            }
+            if (possibleAges.length > 0) {
+              // Simple strategy: always advance from the lowest possible age
+              const ageToAdvanceFrom = possibleAges[0];
+              advances.push(ageToAdvanceFrom);
+              tempScoreTrack[ageToAdvanceFrom]--;
+            }
           }
-        }
-        if (possibleAges.length > 0) {
-          const ageToAdvanceFrom = possibleAges[Math.floor(Math.random() * possibleAges.length)];
-          console.log(`AI ACTION: advance - advancing from age index ${ageToAdvanceFrom}`);
-          await advanceCrown(lobbyId, playerId, ageToAdvanceFrom);
-        } else {
-          console.log("AI ACTION: advance - no valid crowns to advance, this may be an issue.");
+          console.log(`AI ACTION: advance - batch advancing crowns: ${JSON.stringify(advances)}`);
+          await advanceCrown(lobbyId, playerId, { advances });
         }
       }
       break;
@@ -411,6 +427,25 @@ export async function runAIAction(aiPlayer, gameData) {
         }
       }
       break;
+    case 'y2k-discard':
+      {
+        // AI will always decline to discard for Y2K for now.
+        console.log("AI ACTION: y2k-discard - declining");
+        await resolveY2KDiscard(lobbyId, playerId, { cardIndex: null });
+      }
+      break;
+    case 'inquisition':
+      {
+        // Simple logic: if hand is large or has few coins, discard. Otherwise, lose coins.
+        if (aiPlayer.handCount > 5 || aiPlayer.coins < 4) {
+          console.log("AI ACTION: inquisition - choosing to discard card 0");
+          await resolveInquisition(lobbyId, playerId, { cardIndex: 0 });
+        } else {
+          console.log("AI ACTION: inquisition - choosing to lose coins");
+          await resolveInquisition(lobbyId, playerId, { cardIndex: null });
+        }
+      }
+      break;
     case 'treasure-map-choice':
       console.log("AI ACTION: treasure-map-choice - accept");
       await resolveTreasureMap(lobbyId, playerId, true);
@@ -505,6 +540,53 @@ export async function runAIAction(aiPlayer, gameData) {
           const zoneIndex = gameData.legalZones[Math.floor(Math.random() * gameData.legalZones.length)];
           console.log(`AI ACTION: ${aiPlayer.prompt} - choosing zone index ${zoneIndex}`);
           aiPlayer.prompt === 'move' ? await resolveMove(lobbyId, playerId, zoneIndex) : await resolveSetHQ(lobbyId, playerId, zoneIndex);
+        }
+      }
+      break;
+    case 'sunboat-choice':
+      {
+        const choice = Math.random() < 0.9; // 90% chance to accept
+        console.log(`AI ACTION: sunboat-choice - choosing ${choice}`);
+        await resolveSunboat(lobbyId, playerId, choice);
+      }
+      break;
+    case 'return-card':
+      {
+        if (aiPlayer.hand.length > 0) {
+          const cardIndex = Math.floor(Math.random() * aiPlayer.hand.length);
+          console.log(`AI ACTION: return-card - returning card at index ${cardIndex}`);
+          await returnCard(lobbyId, playerId, cardIndex);
+        } else {
+          console.log("AI ACTION: return-card - no cards to return.");
+        }
+      }
+      break;
+    case 'post-visit-choice':
+    case 'end-of-turn-choice':
+    case 'start-of-turn-choice':
+      {
+        const choices = aiPlayer.promptContext?.choices;
+        if (choices && choices.length > 0) {
+          const randomChoice = choices[Math.floor(Math.random() * choices.length)];
+          console.log(`AI ACTION: ${aiPlayer.prompt} - choosing '${randomChoice.label}'`);
+
+          // The payload for start-of-turn choices can be more complex if it's a secret card.
+          // For now, we assume it's a simple choiceId.
+          const payload = { choiceId: randomChoice.id };
+
+          switch (aiPlayer.prompt) {
+            case 'post-visit-choice':
+              await choosePostVisit(lobbyId, playerId, payload);
+              break;
+            case 'end-of-turn-choice':
+              await chooseEndOfTurn(lobbyId, playerId, payload);
+              break;
+            case 'start-of-turn-choice':
+              await chooseStartOfTurn(lobbyId, playerId, payload);
+              break;
+          }
+        } else {
+          console.warn(`AI ACTION: ${aiPlayer.prompt} - no choices available.`);
         }
       }
       break;

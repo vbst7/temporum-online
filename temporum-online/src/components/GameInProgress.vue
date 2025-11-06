@@ -72,6 +72,13 @@ const newMessage = ref('');
 const discardSelection = ref([]);
 const logContent = ref(null);
 
+const advancementState = ref({
+  pendingCrowns: 0,
+  advances: [], // array of age indices to advance from
+  tempScoreTrack: [],
+});
+
+
 const sortCards = (cards) => {
   if (!cards) return [];
   return [...cards].sort((a, b) => {
@@ -484,6 +491,14 @@ watch(() => clientPlayer.value?.prompt, (newPrompt) => {
   if (newPrompt !== 'discard-many') {
     discardSelection.value = [];
   }
+  if (newPrompt === 'advance' && clientPlayer.value) {
+    advancementState.value.pendingCrowns = clientPlayer.value.crowns;
+    advancementState.value.advances = [];
+    advancementState.value.tempScoreTrack = [...clientPlayer.value.scoreTrack];
+  } else {
+    advancementState.value.pendingCrowns = 0;
+    discardSelection.value = [];
+  }
 });
 
 // Auto-decline Y2K if no perpetual cards in hand
@@ -755,13 +770,14 @@ function colorToCssClass(color) {
 }
 
 async function handleScoreTrackClick(color, ageIndex) {
-    if (
-        clientPlayer.value?.prompt === 'advance' && 
-        clientPlayer.value?.color === color &&
-        ageIndex < 3 && // Can't advance from Age IV
-        clientPlayer.value.scoreTrack[ageIndex] > 0
-    ) {
-        await advanceCrown(gameData.value.lobbyId, clientPlayer.value.id, ageIndex);
+    if (clientPlayer.value?.prompt === 'advance' && clientPlayer.value?.color === color) {
+        if (ageIndex < 3 && advancementState.value.tempScoreTrack[ageIndex] > 0 && advancementState.value.pendingCrowns > 0) {
+            // Locally plan the advance
+            advancementState.value.advances.push(ageIndex);
+            advancementState.value.tempScoreTrack[ageIndex]--;
+            advancementState.value.tempScoreTrack[ageIndex + 1]++;
+            advancementState.value.pendingCrowns--;
+        }
     } else if (
         clientPlayer.value?.prompt === 'retreat' &&
         clientPlayer.value?.color === color &&
@@ -770,6 +786,18 @@ async function handleScoreTrackClick(color, ageIndex) {
     ) {
         await retreatCrown(gameData.value.lobbyId, clientPlayer.value.id, ageIndex);
     }
+}
+
+function resetAdvancement() {
+  if (clientPlayer.value) {
+    advancementState.value.pendingCrowns = clientPlayer.value.crowns;
+    advancementState.value.advances = [];
+    advancementState.value.tempScoreTrack = [...clientPlayer.value.scoreTrack];
+  }
+}
+
+async function confirmAdvancement() {
+  await advanceCrown(gameData.value.lobbyId, clientPlayer.value.id, { advances: advancementState.value.advances });
 }
 
 function inspectItem(item, type) {
@@ -1123,8 +1151,13 @@ async function handleChooseStartOfTurn(choiceId) {
           <button class="option-btn" @click="onResolveChoice(false, 'space-age')">Decline</button>
         </template>
         <template v-else-if="clientPlayer?.prompt === 'advance'">
-          <p class="prompt-instruction">Advancing {{ clientPlayer.crowns }} crowns</p>
-          <p class="prompt-instruction">Click a score track to advance a crown.</p>
+          <p class="prompt-instruction">Advancing {{ clientPlayer.crowns }} <CrownIcon fill="gold" class="inline-crown-icon" /></p>
+          <p class="prompt-instruction">Click a score track to plan an advancement.</p>
+          <p class="prompt-instruction">Remaining: {{ advancementState.pendingCrowns }}</p>
+          <div class="dialog-buttons">
+            <button class="option-btn" @click="resetAdvancement">Reset</button>
+            <button class="option-btn" @click="confirmAdvancement" :disabled="advancementState.pendingCrowns > 0">Confirm</button>
+          </div>
         </template>
         <template v-else-if="clientPlayer?.prompt === 'choose'">
           <!-- Instruction for the player -->
@@ -1439,18 +1472,24 @@ async function handleChooseStartOfTurn(choiceId) {
       <div class="color-strips">
         <div v-for="color in ['red', 'green', 'white', 'pink', 'yellow']" :key="color" class="color-strip">
           <template v-if="playersByColor[color]">
+            <!-- Determine which score track to display -->
+            <template v-if="clientPlayer?.prompt === 'advance' && clientPlayer?.color === color">
+              <div v-for="ageIndex in 4" :key="ageIndex" class="color-section" :class="[colorToCssClass(color), { 'advance-interactive': (ageIndex - 1) < 3 && advancementState.tempScoreTrack[ageIndex - 1] > 0 }]" @click="handleScoreTrackClick(color, ageIndex - 1)">
+                <div class="crown-container">
+                  <CrownIcon v-for="n in advancementState.tempScoreTrack[ageIndex - 1]" :key="n" :fill="getPlayerLogColor(color)" class="crown-symbol" />
+                </div>
+              </div>
+            </template>
+            <template v-else>
             <div v-for="ageIndex in 4" :key="ageIndex" 
                 class="color-section"
-                :class="[
-                  colorToCssClass(color), 
-                  { 'advance-interactive': clientPlayer?.prompt === 'advance' && clientPlayer?.color === color && (ageIndex - 1) < 3 && playersByColor[color].scoreTrack[ageIndex - 1] > 0 },
-                  { 'retreat-interactive': clientPlayer?.prompt === 'retreat' && clientPlayer?.color === color && (ageIndex - 1) > 0 && playersByColor[color].scoreTrack[ageIndex - 1] > 0 }
-                ]"
+                :class="[colorToCssClass(color), { 'retreat-interactive': clientPlayer?.prompt === 'retreat' && clientPlayer?.color === color && (ageIndex - 1) > 0 && playersByColor[color].scoreTrack[ageIndex - 1] > 0 }]"
                 @click="handleScoreTrackClick(color, ageIndex - 1)">
               <div class="crown-container">
                 <CrownIcon v-for="n in playersByColor[color].scoreTrack[ageIndex - 1]" :key="n" :fill="getPlayerLogColor(color)" class="crown-symbol" />
               </div>
             </div>
+            </template>
           </template>
           <template v-else>
             <!-- Render empty sections if color is not used -->
